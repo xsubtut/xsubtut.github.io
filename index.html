@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>C による Perl 拡張入門(書きかけ)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+    <script src="//code.jquery.com/jquery.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="../../assets/js/html5shiv.js"></script>
+      <script src="../../assets/js/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <p>C で Perl を拡張するもっとも簡単な方法</p>
+
+<h1>はじめに</h1>
+
+<p>Perl で C の拡張を書くときにつかう XS はむずかしい、と聞いたことがあるかとおもいますが、実際んところどうなのかというと、XS は記法がむずかしかったり、なんかルールがむずかしかったりします。</p>
+
+<p>また、いろんな楽をするための書き方ができて便利なのですが、そのすべてを覚えるのが面倒だったりします。</p>
+
+<p>なので本稿では、こまかいところをハショって、Perl の拡張ライブラリを書く方法の基礎を一気にながしこむという形式をめざします。</p>
+
+<p>Perl の世界では、C で書かれた組み込み関数を XSUB といいます。本稿では XS をつかわずに Perl の C 拡張を直接 C のマクロのみで記述することにより、学習コストの軽減をはかります。</p>
+
+<h1>型をおぼえる</h1>
+
+<p>Perl の内部データは構造体におさまっています。そのあたりを把握していきましょう。</p>
+
+<p>継承関係にあるものは親にキャストが可能です。たとえば、AV<em> は SV</em> にキャストできます。</p>
+
+<h2>SV</h2>
+
+<p>Perl のすべての値は SV から派生しています。</p>
+
+<h2>IV</h2>
+
+<p>IV is-a SV の関係です。整数値がはいっています。</p>
+
+<h2>NV</h2>
+
+<p>NV is-a SV の関係です。浮動小数点がはいっています。</p>
+
+<h2>AV</h2>
+
+<p>AV is-a SV の関係です。配列データがはいっています。</p>
+
+<h2>HV</h2>
+
+<p>HV is-a SV の関係です。ハッシュです。</p>
+
+<h1>リファレンスカウント</h1>
+
+<p>Perl5 におけるメモリの管理はリファレンスカウントという方式でおこなわれています。これはつまり、変数ごとに「この変数は○箇所から参照されているョ」というマークをつけておき、どこからも参照されなくなったらその部分のメモリを再利用するというだけの仕組みです。</p>
+
+<p>リファレンスカウンタ方式のメモリ管理では、このリファレンスカウンターの操作を、拡張モジュールの作者が気をつけておこなわなければなりません。</p>
+
+<p>一方で、メモリの増減などが予測しやすい、デバッグがしやすいというメリットもあります。</p>
+
+<p>各 Perl API の、どのタイミングでリファレンスカウントが増減するのかを把握することが、拡張モジュールを書く上での第一歩だといえます。</p>
+
+<h1>C拡張の実例</h1>
+
+<h2>Hello, world!</h2>
+
+<p>まずは、もっともシンプルなケースから見ていきましょう。以下は、標準出力に "Hello, world!" という文字列を表示するだけの簡単なコードです。</p>
+
+<p>XS(hello) {
+dVAR; dXSVARS; # おまじない</p>
+
+<p>PerlIO_printf(PerlIO_stdout(), "Hello, world!\n");</p>
+
+<p>XSRETURN(0); # 返す値の数
+}</p>
+
+<p>まず最初に、引数の受取および返り値の返却においては、スタック構造がつかわれていることを意識してください。引数をスタックにつんだ状態で XS の関数(XSUB)はコールされます。返却値はスタックにつんでから return します。</p>
+
+<p>さて、最初の XS(hello) の部分ですが、こちらは、XS 用のプロトタイプを処理するマクロです。C の関数のシグネチャーを隠蔽してくれているだけですね。</p>
+
+<p>関数の中をみてみると、中には dVAR; dXSVARS; という行があります。これは、Perl の内部構造からデータをとりだすという処理を隠蔽するためのマクロです。内部構造に直接さわると、内部構造の変化によわくなるので、こういうマクロを経由してさわるのが基本です。dXSVARS; は XSUB</p>
+
+<h1>引数の処理</h1>
+
+<h1>コンテキスト</h1>
+
+<p>GIMME_V という値を参照することで、Perl における wantarray と同等のことができます。</p>
+
+<p>TODO</p>
+
+<h1>基本的な Perl API</h1>
+
+<h2>SV の操作</h2>
+
+<h3>SvREFCNT_inc(SV*)</h3>
+
+<p>配列のリファレンスカウントをインクリメントします。</p>
+
+<h2>配列の操作</h2>
+
+<h3>AV* av = newAV()</h3>
+
+<p>配列をつくります。リファレンスカウントはもちろん1です。</p>
+
+<h3>av_push(AV<em>av, SV</em>sv)</h3>
+
+<p>配列に要素を push します。Perl で書いたときの <code>push @a, $b</code> とおなじです。sv のリファレンスカウントは操作されないことに気をつけてください。</p>
+
+<h3>av_pop(AV*av)</h3>
+
+<p>配列の要素を pop します。Perl で <code>pop @a</code> とするのとおなじです。</p>
+
+<h3>av_shift</h3>
+
+<h3>av_unshift</h3>
+
+<h3>av_fetch</h3>
+
+<h3>av_store</h3>
+
+<h2>HV</h2>
+
+<h3></h3>
+
+<h1>まとめ</h1>
+
+<p>XS でいろいろかいて CPAN にジャンジャンとアップしましょう。</p>
+
+  </body>
+</html>
