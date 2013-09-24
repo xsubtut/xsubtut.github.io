@@ -5,12 +5,12 @@
 
 #include "ppport.h"
 
-XS(hello) {
-    dVAR; dXSVARS; # おまじない
+MODULE = Hello		PACKAGE = Hello
 
-    # 出力する
+void
+hello()
+PPCODE:
+{
     PerlIO_printf(PerlIO_stdout(), "Hello, world!\n");
-
-    XSRETURN(0); # 返す値の数
+    XSRETURN(0);
 }
-

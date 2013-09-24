@@ -3,8 +3,8 @@
   <head>
     <title>C による Perl 拡張入門(書きかけ)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="http://bootswatch.com/journal/bootstrap.css">
+    <link rel="stylesheet" href="http://bootswatch.com/assets/css/bootswatch.min.css">
     <script src="//code.jquery.com/jquery.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -17,10 +17,9 @@
     <div class="container">
         <div class="row">
             <div class="col-md-6">
-                <h1>CによるPerl拡張入門(書きかけ)</h1>
-                <p>C で Perl を拡張するもっとも簡単な方法</p>
+                <h1>CによるPerl拡張入門</h1>
 
-<h1>はじめに</h1>
+<h2>はじめに</h2>
 
 <p>Perl で C の拡張を書くときにつかう XS はむずかしい、と聞いたことがあるかとおもいますが、実際んところどうなのかというと、XS は記法がむずかしかったり、なんかルールがむずかしかったりします。</p>
 
@@ -28,35 +27,55 @@
 
 <p>なので本稿では、こまかいところをハショって、Perl の拡張ライブラリを書く方法の基礎を一気にながしこむという形式をめざします。</p>
 
-<p>Perl の世界では、C で書かれた組み込み関数を XSUB といいます。本稿では XS をつかわずに Perl の C 拡張を直接 C のマクロのみで記述することにより、学習コストの軽減をはかります。</p>
+<p>Perl の世界では、C で書かれた組み込み関数を XSUB といいます。本稿では XS のややこしい機能をつかわずに Perl の C 拡張を、なるべくマクロを中心につかうことにより、学習コストの低減をはかります。</p>
 
-<h1>型をおぼえる</h1>
+<h3>前提知識</h3>
+
+<p>本稿では一般的な C の知識および Perl の知識を読者がもっていることを想定しています。XS の知識や Perl の内部構造に関する知識はもっていない前提ですので、万が一そういったものが要求されている!! と感じた場合には、github issues などで教えてください。</p>
+
+<h2>XS とは</h2>
+
+<p>Perl の世界では、XS という言語をつかって C 拡張を記述します。これは基本的には C にたいするマクロ言語です。正規表現でがんばって置換しているだけなので、あまりかしこくはありません。かなりいろいろな機能があるのですが、いろいろできすぎて初心者にやさしくないので、本稿では、ごくごくシンプルな記法のみを紹介します。</p>
+
+<p>XS は本当にいろいろできて便利なのですが、いざこったことをやろうとすると、基本的な方法にもどらざるをえない、というようなことも多発しますので、本稿ではただひたすらに基本的な方法を紹介しつづけます。</p>
+
+<h2>型を知る</h2>
 
 <p>Perl の内部データは構造体におさまっています。そのあたりを把握していきましょう。</p>
 
 <p>継承関係にあるものは親にキャストが可能です。たとえば、AV<em> は SV</em> にキャストできます。</p>
 
-<h2>SV</h2>
+<h3>SV</h3>
 
 <p>Perl のすべての値は SV から派生しています。</p>
 
-<h2>IV</h2>
+<h3>IV</h3>
 
-<p>IV is-a SV の関係です。整数値がはいっています。</p>
+<p>SV has-a IV の関係です。SV 構造体の中に IV が格納されている、とおもってください。整数値がはいっています。</p>
 
-<h2>NV</h2>
+<pre><code>IV iv = SvIV(sv);
+</code></pre>
 
-<p>NV is-a SV の関係です。浮動小数点がはいっています。</p>
+<p>とすることで、SV* を IV に変換できます。</p>
 
-<h2>AV</h2>
+<pre><code>SV* sv = newSViv(iv);
+</code></pre>
 
-<p>AV is-a SV の関係です。配列データがはいっています。</p>
+<p>とすることで、IV を SV* に変換できます。</p>
 
-<h2>HV</h2>
+<h3>NV</h3>
 
-<p>HV is-a SV の関係です。ハッシュです。</p>
+<p>SV has-a NV の関係です。SV 構造体の中に NV が格納されている、とおもってください。浮動小数点値がはいっています。</p>
 
-<h1>リファレンスカウント</h1>
+<h3>AV</h3>
+
+<p>AV is-a SV の関係です。配列データがはいっています。SV にキャストしてつかうことができます。</p>
+
+<h3>HV</h3>
+
+<p>HV is-a SV の関係です。ハッシュです。SV にキャストしてつかうことができます。</p>
+
+<h2>リファレンスカウント</h2>
 
 <p>Perl5 におけるメモリの管理はリファレンスカウントという方式でおこなわれています。これはつまり、変数ごとに「この変数は○箇所から参照されているョ」というマークをつけておき、どこからも参照されなくなったらその部分のメモリを再利用するというだけの仕組みです。</p>
 
@@ -66,71 +85,252 @@
 
 <p>各 Perl API の、どのタイミングでリファレンスカウントが増減するのかを把握することが、拡張モジュールを書く上での第一歩だといえます。</p>
 
-<h1>C拡張の実例</h1>
+<h2>なにはなくとも Hello, world!</h2>
 
-<h2>Hello, world!</h2>
+<p>前提知識の羅列が続く文章ほどダルいものもないので、実際のコードを見たい、とおもっている方も多かろう。まずは、もっともシンプルなケースを見ていこう。以下は、標準出力に "Hello, world!" という文字列を表示するだけの簡単なコードだ。</p>
 
-<p>まずは、もっともシンプルなケースから見ていきましょう。以下は、標準出力に "Hello, world!" という文字列を表示するだけの簡単なコードです。</p>
+<p>今回のコードは (TODO) で見ることができる。</p>
 
-<p>XS(hello) {
-dVAR; dXSVARS; # おまじない</p>
+<h3>はじめての XS</h3>
 
-<p>PerlIO_printf(PerlIO_stdout(), "Hello, world!\n");</p>
+<p>以下が今回よむ XS コードの全貌である。XS で書かれたコードはなんとも珍妙な見た目をしているが、慣れてしまえばどうということはない。美人は三日で飽きるがブスは三日で慣れるというではないか。</p>
 
-<p>XSRETURN(0); # 返す値の数
-}</p>
+<pre><code>#define PERL_NO_GET_CONTEXT
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
 
-<p>まず最初に、引数の受取および返り値の返却においては、スタック構造がつかわれていることを意識してください。引数をスタックにつんだ状態で XS の関数(XSUB)はコールされます。返却値はスタックにつんでから return します。</p>
+#include "ppport.h"
 
-<p>さて、最初の XS(hello) の部分ですが、こちらは、XS 用のプロトタイプを処理するマクロです。C の関数のシグネチャーを隠蔽してくれているだけですね。</p>
+MODULE = Hello          PACKAGE = Hello
 
-<p>関数の中をみてみると、中には dVAR; dXSVARS; という行があります。これは、Perl の内部構造からデータをとりだすという処理を隠蔽するためのマクロです。内部構造に直接さわると、内部構造の変化によわくなるので、こういうマクロを経由してさわるのが基本です。dXSVARS; は XSUB</p>
+void
+hello(...)
+PPCODE:
+{
+    PerlIO_printf(PerlIO_stdout(), "Hello, world!\n");
+    XSRETURN(0);
+}
+</code></pre>
 
-<h1>引数の処理</h1>
+<p>まず最初に、引数の受取および返り値の返却においては、スタック構造がつかわれていることを意識してください。引数をスタックにつんだ状態で XS の関数(XSUB)はコールされます。返却値はスタックにつんでから return します。これを常に意識しながらすすむことが肝要です。</p>
 
-<h1>コンテキスト</h1>
+<pre><code>#define PERL_NO_GET_CONTEXT
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+</code></pre>
+
+<p>の部分はヘッダファイルをよみこんでいるだけなので問題ないかとおもいます。<code>PERL_NO_GET_CONTEXT</code> は、指定すると効率がよくなる場合があるマクロなので、なんとなく指定しておけばよい。</p>
+
+<pre><code>MODULE = Hello          PACKAGE = Hello
+</code></pre>
+
+<p>ここは、モジュールとパッケージの指定だ。一つのファイルに複数個書くことができる。この宣言以下の部分は、<code>PACKAGE=</code> で指定したパッケージにひもづくこととなる。</p>
+
+<pre><code>void
+hello(...)
+PPCODE:
+</code></pre>
+
+<p>ここは、もうなんというか、そういうものだとおもってください!! ってかんじである。値を返そうが返すまいがとりあえず void を指定し、引数は可変長かのように指定し、PPCODE: という修飾子を指定することにより、おぼえることをすごくへらすことができるんです! そういうものなんです! なお、hello の部分が関数名となることはいうまでもない。</p>
+
+<p>さていよいよ本文だ。<code>PerlIO_printf()</code> は printf 関数を XSUB の世界からコールするときにつかう API です。PerlIO を通しておこなってくれるのがポイントです。<code>PerlIO_stdout()</code> は <code>*STDOUT</code> に対して処理をおこなうよ、という意味ですね。あとの引数は通常の printf(1) とおなじです。</p>
+
+<p><code>XSRETURN(0)</code> では返り値の数を指定しています。今回は一個も返り値はないので <code>XSRETURN(0)</code> としています。</p>
+
+<h3>XS モジュールのロード</h3>
+
+<p>XS モジュールは XSLoader というモジュールをつかってロードする。DynaLoader というモジュールでロードしてもよいのだが、原状では XSLoader をつかう方が主流なので、こちらをつかっておけば間違いはない。</p>
+
+<p>使い方は簡単で、以下のようにすればよい。</p>
+
+<pre><code>package Hello;
+our $VERSION="0.01";
+require XSLoader;
+XSLoader::load(__PACKAGE__, $VERSION);
+</code></pre>
+
+<p>これはもうテンプレだとおもってつかっていればよい。</p>
+
+<p>なお、<a href="https://metacpan.org/module/Minilla">Minilla</a> のようなスケルトンジェネレータをつかえば、このあたりのコードは自動生成されるので、通常は意識する必要はない。</p>
+
+<h2>引数を処理し、値を返す XS</h2>
+
+<p>Hello, world の例では引数の処理や値を返す処理がなかった。説明を簡略化するためにはぶいたのだが、実際のところ、引数もなく値もかえさない XS など通常は意味がないだろう。</p>
+
+<p>そういうわけで、そういった処理をする XS を書いてみよう。</p>
+
+<pre><code>MODULE = Sum            PACKAGE = Sum
+
+void
+sum(...)
+PPCODE:
+{
+    if (items != 2) {
+        croak("Invalid argument count: %d", items);
+    }
+    SV *a = ST(0);
+    SV *b = ST(1);
+
+    IV ret = SvIV(a) + SvIV(b);
+
+    XPUSHs(sv_2mortal(newSViv(ret)));
+    XSRETURN(1);
+}
+</code></pre>
+
+<p>前回よりぐっと本格的になっている。</p>
+
+<pre><code>    if (items != 2) {
+        croak("Invalid argument count: %d", items);
+    }
+</code></pre>
+
+<p>ここで、引数の個数をチェックしている。<code>items</code> は引数の数をあらわす変数で、XS の中の人が勝手に用意してくれる変数のうちのひとつだ。せっかく用意してもらったのでありがたく使わせていただく。<code>croak</code> は Perl の <code>Carp::croak</code> とおなじように、ただ死ぬという関数である。Perl の <code>Carp::croak</code> とちがって、printf 的機能も内蔵しているのがちょっとちがうところなので注意。</p>
+
+<pre><code>    SV *a = ST(0);
+    SV *b = ST(1);
+</code></pre>
+
+<p><code>ST(n)</code> はスタックにつまれた値のうち、n番目のものをとりだすというマクロ。これもどうということはない。ただ第一引数と第二引数をとりだして変数にいれただけだ。</p>
+
+<pre><code>    IV ret = SvIV(a) + SvIV(b);
+</code></pre>
+
+<p><code>SvIV(SV*)</code> は SV 構造体の中にはいっている IV (整数値)をとりだすマクロだ。さて、ここで注意が必要なのが、Perl の世界では文字列と整数がなんとなく自動的に変換されるということだ。そう。この SvIV で、SV の中身が文字列だった場合も IV (整数値)に変換されるのだ。そういうわけなので <code>Sum::sum("5963", "4649")</code> のような呼出の場合でも問題なく処理はおこなわれる。</p>
+
+<p>加算自体は普通の C レベルの加算となっていて、その結果を IV に保存している。IV は int ととかそういうものが typedef されたものだ(Configure script の設定によって IV のビット幅は変更されることに注意せよ)。</p>
+
+<p>さて、計算がおわったので、いよいよ値を返却しよう。</p>
+
+<pre><code>    XPUSHs(sv_2mortal(newSViv(ret)));
+</code></pre>
+
+<p>ここは3つもマクロ/関数がいりまじっていてちょっとだけややこしい。まずは内側から見ていこう。<code>newSViv(IV)</code> で、該当の IV をもった SV を生成している。IV は C の世界での整数型なので、そのまま Perl の世界にもどすことはできないのだ。Perl の世界であつかえるのはただ SV 型のみであることを思いだしていただきたい。</p>
+
+<p><code>sv_2mortal(SV*)</code> は、SV 構造体の SVs_TEMP フラッグをたてる君です。このフラッグがたっているとどうなるかというと、スコープをぬけたタイミングで、参照カウンタを1へらしてくれます。これはつまり、Objective-C でいうところの autorelease みたいなものだとおもってください。</p>
+
+<!-- (よりわかりやすい説明があるとよいとおもうので p-r 希望) -->
+
+
+<pre><code>    XSRETURN(1);
+</code></pre>
+
+<p>最後に XSRETURN(1) として、返り値の数を報告したらすべての作業は完了となる。</p>
+
+<h2>コンテキストを読む XS</h2>
 
 <p>GIMME_V という値を参照することで、Perl における wantarray と同等のことができます。</p>
 
-<p>TODO</p>
+<pre><code>MODULE = Gimme          PACKAGE = Gimme 
 
-<h1>基本的な Perl API</h1>
+void
+gimme(...)
+PPCODE:
+{
+    if (GIMME_V == G_ARRAY) {
+        XPUSHs(sv_2mortal(newSViv(1)));
+        XPUSHs(sv_2mortal(newSViv(2)));
+        XPUSHs(sv_2mortal(newSViv(3)));
+        XSRETURN(3);
+    } else if (GIMME_V == G_VOID) {
+        XSRETURN(0);
+    } else if (GIMME_V == G_SCALAR) {
+        XPUSHs(sv_2mortal(newSViv(5963)));
+        XSRETURN(1);
+    } else {
+        abort();
+    }
+}
+</code></pre>
 
-<h2>SV の操作</h2>
+<p>GIMME_V は G_ARRAY, G_VOID, G_SCALAR のうちいずれかを取ります。</p>
 
-<h3>SvREFCNT_inc(SV*)</h3>
+<h2>ポインタをふくむ XS</h2>
 
-<p>配列のリファレンスカウントをインクリメントします。</p>
+<p>TBD</p>
 
-<h2>配列の操作</h2>
+<h2>基本的な Perl API</h2>
 
-<h3>AV* av = newAV()</h3>
+<p>以下に基本的な Perl API について説明します。ベーシックな操作は網羅しているつもりですが、「これがあったほうがいいのでは?」という意見があれば github issues にておしらせください。</p>
+
+<p>高速化のためにつかえるものや、2つの関数の組み合わせで可能な処理などについてはここには記述していません。</p>
+
+<h3>SV の操作</h3>
+
+<h4><code>SvREFCNT_inc(SV*)</code></h4>
+
+<p>SV のリファレンスカウントをインクリメントします。</p>
+
+<h4><code>SvREFCNT_dec(SV*)</code></h4>
+
+<p>SV のリファレンスカウントをインクリメントします。</p>
+
+<h4><code>IV iv = SvIV(SV* sv)</code></h4>
+
+<p>SV 構造体から IV をとりだします。IV がふくまれていない SV だった場合には、自動的に変換がはしります。</p>
+
+<h3>配列の操作</h3>
+
+<h4><code>AV* av = newAV()</code></h4>
 
 <p>配列をつくります。リファレンスカウントはもちろん1です。</p>
 
-<h3>av_push(AV<em>av, SV</em>sv)</h3>
+<h4><code>av_push(AV*av, SV*sv)</code></h4>
 
 <p>配列に要素を push します。Perl で書いたときの <code>push @a, $b</code> とおなじです。sv のリファレンスカウントは操作されないことに気をつけてください。</p>
 
-<h3>av_pop(AV*av)</h3>
+<h4><code>av_pop(AV*av)</code></h4>
 
 <p>配列の要素を pop します。Perl で <code>pop @a</code> とするのとおなじです。</p>
 
-<h3>av_shift</h3>
+<h4>av_shift</h4>
 
-<h3>av_unshift</h3>
+<h4>av_unshift</h4>
 
-<h3>av_fetch</h3>
+<h4>av_fetch</h4>
 
-<h3>av_store</h3>
+<h4>av_store</h4>
 
-<h2>HV</h2>
+<h3>HV</h3>
 
-<h3></h3>
+<h4><code>HV* = newHV()</code></h4>
 
-<h1>まとめ</h1>
+<h2>さらに上をめざす</h2>
+
+<p>本稿に書かれている範囲よりもさらに深く知りたいという方は以下のようなページを見てください。</p>
+
+<h3><a href="http://perldoc.perl.org/perlxstut.html">perlxstut</a></h3>
+
+<p>XS のチュートリアルドキュメントです。</p>
+
+<h3><a href="http://perldoc.perl.org/perlapi.html">perlapi</a></h3>
+
+<p>Perl の外部向け API が網羅されています。</p>
+
+<h3><a href="http://perldoc.perl.org/perlguts.html">perlguts</a></h3>
+
+<p>Perl の内部のことが解説されてます。</p>
+
+<h3><a href="http://cpansearch.perl.org/src/RURBAN/illguts-0.44/index.html">illguts</a></h3>
+
+<p>Perl の内部構造を画像まじりで解説してくれるページです。</p>
+
+<h2>まとめ</h2>
+
+<p>本稿は、いかがでしたでしょうか。XS を「書く」ことについての基本的な知識はついたのではないかとおもいます。</p>
 
 <p>XS でいろいろかいて CPAN にジャンジャンとアップしましょう。</p>
+
+<p>質問、ご要望は github issues にてうけつけていますので、お気軽にどうぞ。</p>
+
+<h2>Future Plan</h2>
+
+<ul>
+<li>構造体を隠蔽する方法</li>
+</ul>
+
 
             </div>
         </div>
