@@ -1,4 +1,6 @@
-# CによるPerl拡張入門
+# CによるPerl拡張入門(α)
+
+現状、本稿ははげしくかきかけです。フィードバックをおまちしております。
 
 ## はじめに
 
@@ -189,7 +191,7 @@ Hello, world の例では引数の処理や値を返す処理がなかった。�
 
 GIMME_V という値を参照することで、Perl における wantarray と同等のことができます。
 
-	MODULE = Gimme          PACKAGE = Gimme 
+	MODULE = Gimme          PACKAGE = Gimme
 	
 	void
 	gimme(...)
@@ -236,6 +238,19 @@ SV のリファレンスカウントをインクリメントします。
 
 SV 構造体から IV をとりだします。IV がふくまれていない SV だった場合には、自動的に変換がはしります。
 
+#### `char* ptr = SvPV_nolen(SV* sv)`
+
+SV から文字列をとりだします。
+
+#### `char* ptr = SvPV(SV* sv, STRLEN len)`
+
+これは曲者。SV から文字列をとりだしつつ、長さの情報もえます。マクロでやってるので奇妙なかんじになってしまっている。
+
+    STRLEN len;
+    char* ptr = SvPV(sv, len);
+
+という風にやると、len のところにしれっと長さ情報がかきこまれます。
+
 ### 配列の操作
 
 #### `AV* av = newAV()`
@@ -244,15 +259,23 @@ SV 構造体から IV をとりだします。IV がふくまれていない SV 
 
 #### `av_push(AV*av, SV*sv)`
 
-配列に要素を push します。Perl で書いたときの `push @a, $b` とおなじです。sv のリファレンスカウントは操作されないことに気をつけてください。
+配列に要素を push します。Perl で書いたときの `push @a, $b` とおなじです。
+
+sv のリファレンスカウントは操作されないので、インクリメントしてからいれてください。
 
 #### `av_pop(AV*av)`
 
 配列の要素を pop します。Perl で `pop @a` とするのとおなじです。
 
-#### av_shift
+#### `av_shift(AV* av, SV*sv)`
 
-#### av_unshift
+配列の要素を shift します。Perl で `shift @a` するのとおなじです。
+
+#### `av_unshift(AV* av, SV* sv)`
+
+配列の要素を shift します。Perl で `shift @a` するのとおなじです。
+
+sv のリファレンスカウントは操作されないので、インクリメントしてからいれてください。
 
 #### av_fetch
 

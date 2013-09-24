@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>C による Perl 拡張入門(書きかけ)</title>
+    <title>C による Perl 拡張入門(</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="http://bootswatch.com/journal/bootstrap.css">
     <link rel="stylesheet" href="http://bootswatch.com/assets/css/bootswatch.min.css">
@@ -18,7 +18,9 @@
     <div class="container">
         <div class="row">
             <div class="col-md-6">
-                <h1>CによるPerl拡張入門</h1>
+                <h1>CによるPerl拡張入門(α)</h1>
+
+<p>現状、本稿ははげしくかきかけです。フィードバックをおまちしております。</p>
 
 <h2>はじめに</h2>
 
@@ -224,7 +226,7 @@ PPCODE:
 
 <p>GIMME_V という値を参照することで、Perl における wantarray と同等のことができます。</p>
 
-<pre><code>MODULE = Gimme          PACKAGE = Gimme 
+<pre><code>MODULE = Gimme          PACKAGE = Gimme
 
 void
 gimme(...)
@@ -272,6 +274,20 @@ PPCODE:
 
 <p>SV 構造体から IV をとりだします。IV がふくまれていない SV だった場合には、自動的に変換がはしります。</p>
 
+<h4><code>char* ptr = SvPV_nolen(SV* sv)</code></h4>
+
+<p>SV から文字列をとりだします。</p>
+
+<h4><code>char* ptr = SvPV(SV* sv, STRLEN len)</code></h4>
+
+<p>これは曲者。SV から文字列をとりだしつつ、長さの情報もえます。マクロでやってるので奇妙なかんじになってしまっている。</p>
+
+<pre><code>STRLEN len;
+char* ptr = SvPV(sv, len);
+</code></pre>
+
+<p>という風にやると、len のところにしれっと長さ情報がかきこまれます。</p>
+
 <h3>配列の操作</h3>
 
 <h4><code>AV* av = newAV()</code></h4>
@@ -280,15 +296,23 @@ PPCODE:
 
 <h4><code>av_push(AV*av, SV*sv)</code></h4>
 
-<p>配列に要素を push します。Perl で書いたときの <code>push @a, $b</code> とおなじです。sv のリファレンスカウントは操作されないことに気をつけてください。</p>
+<p>配列に要素を push します。Perl で書いたときの <code>push @a, $b</code> とおなじです。</p>
+
+<p>sv のリファレンスカウントは操作されないので、インクリメントしてからいれてください。</p>
 
 <h4><code>av_pop(AV*av)</code></h4>
 
 <p>配列の要素を pop します。Perl で <code>pop @a</code> とするのとおなじです。</p>
 
-<h4>av_shift</h4>
+<h4><code>av_shift(AV* av, SV*sv)</code></h4>
 
-<h4>av_unshift</h4>
+<p>配列の要素を shift します。Perl で <code>shift @a</code> するのとおなじです。</p>
+
+<h4><code>av_unshift(AV* av, SV* sv)</code></h4>
+
+<p>配列の要素を shift します。Perl で <code>shift @a</code> するのとおなじです。</p>
+
+<p>sv のリファレンスカウントは操作されないので、インクリメントしてからいれてください。</p>
 
 <h4>av_fetch</h4>
 
