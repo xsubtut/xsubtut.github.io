@@ -571,6 +571,9 @@ Perl の外部向け API が網羅されています。
 ### [perlguts](http://perldoc.perl.org/perlguts.html)
 Perl の内部のことが解説されてます。
 
+### [perlclib](http://perldoc.perl.org/perlclib.html)
+C標準ライブラリを使用する際の、注意点(主に代替すべき API)について記載されています。
+
 ### [illguts](http://cpansearch.perl.org/src/RURBAN/illguts-0.44/index.html)
 
 Perl の内部構造を画像まじりで解説してくれるページです。
