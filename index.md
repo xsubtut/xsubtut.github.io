@@ -239,6 +239,10 @@ TBD
 
 ### SV の操作
 
+#### `newSVsv(SV*)`
+
+SVをコピーして新しいSVを作ります。XSの世界ではPerlの世界とちがって代入や配列への保存時にコピーが発生しないので、必要なときにきちんとコピーをしないとバグのもとになります。たとえば、XSUBの引数をオブジェクトに保存するときは`newSVsv`などでコピーすべきです。
+
 #### `SvREFCNT_inc(SV*)`
 
 SV のリファレンスカウントをインクリメントします。
@@ -293,13 +297,11 @@ SV から文字列をとりだします。
 
 みたいなのをやるにはどうしたらいいのでしょうか。
 
-    SvREFCNT_inc(sv);
-    av_push(av, sv);
+    av_push(av, newSVsv(sv));
 
 配列に要素を push します。
 
-av_push では sv のリファレンスカウントは操作されないので、インクリメントしてからいれてください。
-上の例では、newSViv の
+`av_push` にかぎらず、配列やハッシュに保存するAPIはSVのコピーを行いませんので自分でコピーします。パフォーマンスのためにコピーを省略したい場合は、SvREFCNT_inc でリファレンスカウントを増やしてください。
 
 #### 配列を pop したい
 
@@ -319,8 +321,6 @@ av_push では sv のリファレンスカウントは操作されないので�
 
     SV* sv = av_shift(av);
 
-`av_shift(AV* av, SV*sv)`
-
 配列の要素を shift します。Perl で `shift @a` するのとおなじです。
 
 #### 配列を unshift したい。
@@ -329,10 +329,9 @@ av_push では sv のリファレンスカウントは操作されないので�
 
 みたいなのをやるにはどうしたらいいのでしょうか。
 
-    SvREFCNT_inc(sv);
-    av_unshift(av, sv);
+    av_unshift(av, sv_mortalcopy(sv);
 
-sv のリファレンスカウントは操作されないので、インクリメントしてからいれてください。
+``av_push`` と同じく、SVのコピーを作って入れます。
 
 #### 配列の要素をとりだしたい
 
@@ -356,13 +355,9 @@ sv のリファレンスカウントは操作されないので、インクリ�
 みたいなのをやるにはどうしたらいいのでしょうか。
 
     I32 key = 59;
-    SvREFCNT_inc(sv);
-    SV ** ret = av_store(av, key, sv); 
-    if (!ret) {
-        SvREFCNT_dec(sv);
-    }
+    sv_setsv(*av_fetch(av, key, TRUE), sv);
 
-`av_store` でよいです。ただ、av_store には癖があって、格納に失敗したり、tied array だったりした場合に NULL がかえってきます。NULL がかえってきたときにはリファレンスカウントをデクリメントしてあげないといけないことに注意してください。
+`av_store` を使うこともできますが、`av_store`には癖があるので`av_fetch`の第三引数lvalueをtrueにし、それに対して`sv_setsv`で代入するのがよいです。代入したい値がIVやNVなら、`sv_setsv`のかわりに`sv_setiv`や`sv_setnv`を使ってもかまいません。
 
 使い方がややこしいので `av_push` や `av_unshift` ですませられるときは、そちらをつかっといた方が楽です。
 
