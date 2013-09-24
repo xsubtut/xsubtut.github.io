@@ -64,7 +64,7 @@ Perl5 におけるメモリの管理はリファレンスカウントという�
 
 各 Perl API の、どのタイミングでリファレンスカウントが増減するのかを把握することが、拡張モジュールを書く上での第一歩だといえます。
 
-### mutable な SV
+### mortal な SV
 
 参照カウントで一番問題になるのは、今自分がもっている参照カウントをどうやって手放すか、ということです。
 今てばなしたら0になってしまってSVが開放されてしまうし、手放さなければメモリリーク。どうしたものか!
@@ -570,6 +570,9 @@ Perl の外部向け API が網羅されています。
 
 ### [perlguts](http://perldoc.perl.org/perlguts.html)
 Perl の内部のことが解説されてます。
+
+### [perlclib](http://perldoc.perl.org/perlclib.html)
+C標準ライブラリを使用する際の、注意点(主に代替すべき API)について記載されています。
 
 ### [illguts](http://cpansearch.perl.org/src/RURBAN/illguts-0.44/index.html)
 
