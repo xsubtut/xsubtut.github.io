@@ -441,6 +441,10 @@ say $p-&gt;y; # =&gt; 9
 <p>SV の中身をダンプして出力します。Devel::Peek::Dump とおなじです。
 デバッグ時にはやたらとつかいます。</p>
 
+<h4><code>newSVsv(SV*)</code></h4>
+
+<p>SVをコピーして新しいSVを作ります。XSの世界ではPerlの世界とちがって代入や配列への保存時にコピーが発生しないので、必要なときにきちんとコピーをしないとバグのもとになります。たとえば、XSUBの引数をオブジェクトに保存するときは<code>newSVsv</code>などでコピーすべきです。</p>
+
 <h4><code>SvREFCNT_inc(SV*)</code></h4>
 
 <p>SV のリファレンスカウントをインクリメントします。</p>
@@ -500,14 +504,12 @@ char* ptr = SvPV(sv, len);
 
 <p>みたいなのをやるにはどうしたらいいのでしょうか。</p>
 
-<pre><code>SvREFCNT_inc(sv);
-av_push(av, sv);
+<pre><code>av_push(av, newSVsv(sv));
 </code></pre>
 
 <p>配列に要素を push します。</p>
 
-<p>av_push では sv のリファレンスカウントは操作されないので、インクリメントしてからいれてください。
-上の例では、newSViv の</p>
+<p><code>av_push</code> にかぎらず、配列やハッシュに保存するAPIはSVのコピーを行いませんので自分でコピーします。パフォーマンスのためにコピーを省略したい場合は、SvREFCNT_inc でリファレンスカウントを増やしてください。</p>
 
 <h4>配列を pop したい</h4>
 
@@ -531,8 +533,6 @@ av_push(av, sv);
 <pre><code>SV* sv = av_shift(av);
 </code></pre>
 
-<p><code>av_shift(AV* av, SV*sv)</code></p>
-
 <p>配列の要素を shift します。Perl で <code>shift @a</code> するのとおなじです。</p>
 
 <h4>配列を unshift したい。</h4>
@@ -542,11 +542,10 @@ av_push(av, sv);
 
 <p>みたいなのをやるにはどうしたらいいのでしょうか。</p>
 
-<pre><code>SvREFCNT_inc(sv);
-av_unshift(av, sv);
+<pre><code>av_unshift(av, sv_mortalcopy(sv);
 </code></pre>
 
-<p>sv のリファレンスカウントは操作されないので、インクリメントしてからいれてください。</p>
+<p><code>av_push</code> と同じく、SVのコピーを作って入れます。</p>
 
 <h4>配列の要素をとりだしたい</h4>
 
@@ -573,14 +572,10 @@ $av[$key] = $sv;
 <p>みたいなのをやるにはどうしたらいいのでしょうか。</p>
 
 <pre><code>I32 key = 59;
-SvREFCNT_inc(sv);
-SV ** ret = av_store(av, key, sv); 
-if (!ret) {
-    SvREFCNT_dec(sv);
-}
+sv_setsv(*av_fetch(av, key, TRUE), sv);
 </code></pre>
 
-<p><code>av_store</code> でよいです。ただ、av_store には癖があって、格納に失敗したり、tied array だったりした場合に NULL がかえってきます。NULL がかえってきたときにはリファレンスカウントをデクリメントしてあげないといけないことに注意してください。</p>
+<p><code>av_store</code> を使うこともできますが、<code>av_store</code>には癖があるので<code>av_fetch</code>の第三引数lvalueをtrueにし、それに対して<code>sv_setsv</code>で代入するのがよいです。代入したい値がIVやNVなら、<code>sv_setsv</code>のかわりに<code>sv_setiv</code>や<code>sv_setnv</code>を使ってもかまいません。</p>
 
 <p>使い方がややこしいので <code>av_push</code> や <code>av_unshift</code> ですませられるときは、そちらをつかっといた方が楽です。</p>
 
