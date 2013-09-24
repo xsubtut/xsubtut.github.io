@@ -1,0 +1,6 @@
+Revision history for Perl extension Point.
+
+0.01  Tue Sep 24 09:19:34 2013
+	- original version; created by h2xs 1.23 with options
+		-cfn Point
+
