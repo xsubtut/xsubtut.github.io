@@ -225,9 +225,162 @@ GIMME_V という値を参照することで、Perl における wantarray と�
 
 GIMME_V は G_ARRAY, G_VOID, G_SCALAR のうちいずれかを取ります。
 
+	use Gimme;
+	say join(",", Gimme::gimme());
+	say scalar(Gimme::gimme());
+
+という風にすれば、
+
+	1,2,3
+	5963
+
+という風に、コンテキストによりちがう値を返せていることがわかります。
+
 ## C の世界のポインタを扱う
 
-TBD
+たとえば以下のような「点」をあつかうライブラリがあったとしましょう。
+
+	typedef struct {
+	    int x;
+	    int y;
+	} Point;
+	
+	Point* Point_new(int x, int y) {
+	    Point *p = malloc(sizeof(Point));  
+	    p->x = x;
+	    p->y = y;
+	    return p;
+	}
+	
+	void Point_free(Point* point) {
+	    free(point);
+	}
+
+このとき、XS のコードは以下のように書けます。
+
+	#define XS_STATE(type, x)     (INT2PTR(type, SvROK(x) ? SvIV(SvRV(x)) : SvIV(x)))
+
+    #define XS_STRUCT2OBJ(sv, class, obj) \
+        sv = newSViv(PTR2IV(obj));  \
+        sv = newRV_noinc(sv); \
+        sv_bless(sv, gv_stashpv(class, 1)); \
+        SvREADONLY_on(sv);
+
+    MODULE = Point		PACKAGE = Point		
+
+    void
+    new(...)
+    PPCODE:
+    {
+        if (items != 3) {
+            croak("Bad argument count: %d", items);
+        }
+
+        const char *klass = SvPV_nolen(ST(0));
+        IV x = SvIV(ST(1));
+        IV y = SvIV(ST(2));
+
+        Point *point = Point_new(x, y);
+        SV *sv;
+        XS_STRUCT2OBJ(sv, klass, point);
+        XPUSHs(sv_2mortal(sv));
+        XSRETURN(1);
+    }
+
+    void
+    x(...)
+    PPCODE:
+    {
+        if (items != 1) {
+            croak("Bad argument count: %d", items);
+        }
+
+        Point* point = XS_STATE(Point*, ST(0));
+        XPUSHs(sv_2mortal(newSViv(point->x)));
+        XSRETURN(1);
+    }
+
+    void
+    y(...)
+    PPCODE:
+    {
+        if (items != 1) {
+            croak("Bad argument count: %d", items);
+        }
+
+        Point* point = XS_STATE(Point*, ST(0));
+        XPUSHs(sv_2mortal(newSViv(point->y)));
+        XSRETURN(1);
+    }
+
+    void
+    DESTROY(...)
+    PPCODE:
+    {
+        if (items != 1) {
+            croak("Bad argument count: %d", items);
+        }
+
+        Point* point = XS_STATE(Point*, ST(0));
+        Point_free(point);
+        XSRETURN(0);
+    }
+
+以外とかわっている点はすくないですね。
+
+    const char *klass = SvPV_nolen(ST(0));
+
+`SvPV_nolen(SV*)` は、SV から `char*` つまり PV をとりだすという指令です。
+
+そして、本題は XS_STRUCT2OBJ と XS_STATE の2つのマクロですね。どうみても。
+それではこの2つをよんでいきましょう。
+
+    #define XS_STRUCT2OBJ(sv, class, obj) \
+        sv = newSViv(PTR2IV(obj));  \
+        sv = newRV_noinc(sv); \
+        sv_bless(sv, gv_stashpv(class, 1)); \
+        SvREADONLY_on(sv);
+
+4行もある! ややこしいですね。こんなのみてられないので、マクロを展開しながら考えてみましょう。
+
+        Point *point = Point_new(x, y);
+        SV *sv = newSViv(PTR2IV(point));
+        sv = newRV_noinc(sv);
+        sv_bless(sv, gv_stachpv(klass, 1));
+        SvREADONLY_on(sv);
+        XPUSHs(sv_2mortal(sv));
+        XSRETURN(1);
+
+はい。わかりやすくなりました! よね?
+
+ではあらためて一行ずつよんでいきましょう。
+
+        Point *point = Point_new(x, y);
+
+C の API をよんで、ポインタをえました。
+
+        SV *sv = newSViv(PTR2IV(point));
+
+ポインタを `IV PTR2IV(void*)` のマクロで、IV 型に変換します。そして `SV* newSViv(IV)` で SV 型に変換。
+
+        sv = newRV_noinc(sv);
+
+これで、リファレンスにしています。ここまでで、`\do { my $ptr = 0xdeadfhbeef }` ってやったときの状態になっているわけですね。
+
+        sv_bless(sv, gv_stachpv(klass, 1));
+
+さらに、ここから bless します。`bless \do { my $ptr = 0xdeadfhbeef }, "Point"` とした状態になったわけです。gv_stashpv というのは stash ってやつをとりだす関数です。あまり深くかんがえなくていいです。
+
+
+
+### 動作確認
+
+以下のようにして動作確認ができます。
+
+	use Point;
+	my $p = Point->new(5,9);
+	say $p->x; # => 5
+	say $p->y; # => 9
 
 ## 基本的な Perl API
 
@@ -236,6 +389,11 @@ TBD
 高速化のためにつかえるものや、2つの関数の組み合わせで可能な処理などについてはここには記述していません。
 
 ### SV の操作
+
+#### `sv_dump(SV* sv)`
+
+SV の中身をダンプして出力します。Devel::Peek::Dump とおなじです。
+デバッグ時にはやたらとつかいます。
 
 #### `SvREFCNT_inc(SV*)`
 

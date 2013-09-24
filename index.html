@@ -24,13 +24,11 @@
 
 <h2>はじめに</h2>
 
-<p>Perl で C の拡張を書くときにつかう XS はむずかしい、と聞いたことがあるかとおもいますが、実際んところどうなのかというと、XS は記法がむずかしかったり、なんかルールがむずかしかったりします。</p>
+<p>エPerl で C の拡張がスラスラと書けたら……。C の拡張がスラスラ書けたら、ネイティブのバインディングもスラスラ書けるし、ホットスポットを C で最適化するなんてこともお手の物。書けたらいいけど、XS ってなんかむずかしそう……。</p>
 
-<p>また、いろんな楽をするための書き方ができて便利なのですが、そのすべてを覚えるのが面倒だったりします。</p>
+<p>ちがうんです! 今までの XS の教え方がまちがっていたんです!この教材をつかえば、誰でも簡単に今すぐに XS を書けるようになるんです。Perl の C 拡張を書いて同僚や上司を アッー! と言わせちゃおう!</p>
 
-<p>なので本稿では、こまかいところをハショって、Perl の拡張ライブラリを書く方法の基礎を一気にながしこむという形式をめざします。</p>
-
-<p>Perl の世界では、C で書かれた組み込み関数を XSUB といいます。本稿では XS のややこしい機能をつかわずに Perl の C 拡張を、なるべくマクロを中心につかうことにより、学習コストの低減をはかります。</p>
+<p>この教材では XS のややこしい機能をつかわずに、Perl の C 拡張を書く方法を伝授!初心者でもすぐに C 拡張が書けるようになるぞ!</p>
 
 <h3>前提知識</h3>
 
@@ -263,9 +261,172 @@ PPCODE:
 
 <p>GIMME_V は G_ARRAY, G_VOID, G_SCALAR のうちいずれかを取ります。</p>
 
-<h2>ポインタをふくむ XS</h2>
+<pre><code>use Gimme;
+say join(",", Gimme::gimme());
+say scalar(Gimme::gimme());
+</code></pre>
 
-<p>TBD</p>
+<p>という風にすれば、</p>
+
+<pre><code>1,2,3
+5963
+</code></pre>
+
+<p>という風に、コンテキストによりちがう値を返せていることがわかります。</p>
+
+<h2>C の世界のポインタを扱う</h2>
+
+<p>たとえば以下のような「点」をあつかうライブラリがあったとしましょう。</p>
+
+<pre><code>typedef struct {
+    int x;
+    int y;
+} Point;
+
+Point* Point_new(int x, int y) {
+    Point *p = malloc(sizeof(Point));  
+    p-&gt;x = x;
+    p-&gt;y = y;
+    return p;
+}
+
+void Point_free(Point* point) {
+    free(point);
+}
+</code></pre>
+
+<p>このとき、XS のコードは以下のように書けます。</p>
+
+<pre><code>#define XS_STATE(type, x)     (INT2PTR(type, SvROK(x) ? SvIV(SvRV(x)) : SvIV(x)))
+
+#define XS_STRUCT2OBJ(sv, class, obj) \
+    sv = newSViv(PTR2IV(obj));  \
+    sv = newRV_noinc(sv); \
+    sv_bless(sv, gv_stashpv(class, 1)); \
+    SvREADONLY_on(sv);
+
+MODULE = Point      PACKAGE = Point     
+
+void
+new(...)
+PPCODE:
+{
+    if (items != 3) {
+        croak("Bad argument count: %d", items);
+    }
+
+    const char *klass = SvPV_nolen(ST(0));
+    IV x = SvIV(ST(1));
+    IV y = SvIV(ST(2));
+
+    Point *point = Point_new(x, y);
+    SV *sv;
+    XS_STRUCT2OBJ(sv, klass, point);
+    XPUSHs(sv_2mortal(sv));
+    XSRETURN(1);
+}
+
+void
+x(...)
+PPCODE:
+{
+    if (items != 1) {
+        croak("Bad argument count: %d", items);
+    }
+
+    Point* point = XS_STATE(Point*, ST(0));
+    XPUSHs(sv_2mortal(newSViv(point-&gt;x)));
+    XSRETURN(1);
+}
+
+void
+y(...)
+PPCODE:
+{
+    if (items != 1) {
+        croak("Bad argument count: %d", items);
+    }
+
+    Point* point = XS_STATE(Point*, ST(0));
+    XPUSHs(sv_2mortal(newSViv(point-&gt;y)));
+    XSRETURN(1);
+}
+
+void
+DESTROY(...)
+PPCODE:
+{
+    if (items != 1) {
+        croak("Bad argument count: %d", items);
+    }
+
+    Point* point = XS_STATE(Point*, ST(0));
+    Point_free(point);
+    XSRETURN(0);
+}
+</code></pre>
+
+<p>以外とかわっている点はすくないですね。</p>
+
+<pre><code>const char *klass = SvPV_nolen(ST(0));
+</code></pre>
+
+<p><code>SvPV_nolen(SV*)</code> は、SV から <code>char*</code> つまり PV をとりだすという指令です。</p>
+
+<p>そして、本題は XS_STRUCT2OBJ と XS_STATE の2つのマクロですね。どうみても。
+それではこの2つをよんでいきましょう。</p>
+
+<pre><code>#define XS_STRUCT2OBJ(sv, class, obj) \
+    sv = newSViv(PTR2IV(obj));  \
+    sv = newRV_noinc(sv); \
+    sv_bless(sv, gv_stashpv(class, 1)); \
+    SvREADONLY_on(sv);
+</code></pre>
+
+<p>4行もある! ややこしいですね。こんなのみてられないので、マクロを展開しながら考えてみましょう。</p>
+
+<pre><code>    Point *point = Point_new(x, y);
+    SV *sv = newSViv(PTR2IV(point));
+    sv = newRV_noinc(sv);
+    sv_bless(sv, gv_stachpv(klass, 1));
+    SvREADONLY_on(sv);
+    XPUSHs(sv_2mortal(sv));
+    XSRETURN(1);
+</code></pre>
+
+<p>はい。わかりやすくなりました! よね?</p>
+
+<p>ではあらためて一行ずつよんでいきましょう。</p>
+
+<pre><code>    Point *point = Point_new(x, y);
+</code></pre>
+
+<p>C の API をよんで、ポインタをえました。</p>
+
+<pre><code>    SV *sv = newSViv(PTR2IV(point));
+</code></pre>
+
+<p>ポインタを <code>IV PTR2IV(void*)</code> のマクロで、IV 型に変換します。そして <code>SV* newSViv(IV)</code> で SV 型に変換。</p>
+
+<pre><code>    sv = newRV_noinc(sv);
+</code></pre>
+
+<p>これで、リファレンスにしています。ここまでで、<code>\do { my $ptr = 0xdeadfhbeef }</code> ってやったときの状態になっているわけですね。</p>
+
+<pre><code>    sv_bless(sv, gv_stachpv(klass, 1));
+</code></pre>
+
+<p>さらに、ここから bless します。<code>bless \do { my $ptr = 0xdeadfhbeef }, "Point"</code> とした状態になったわけです。gv_stashpv というのは stash ってやつをとりだす関数です。あまり深くかんがえなくていいです。</p>
+
+<h3>動作確認</h3>
+
+<p>以下のようにして動作確認ができます。</p>
+
+<pre><code>use Point;
+my $p = Point-&gt;new(5,9);
+say $p-&gt;x; # =&gt; 5
+say $p-&gt;y; # =&gt; 9
+</code></pre>
 
 <h2>基本的な Perl API</h2>
 
@@ -274,6 +435,11 @@ PPCODE:
 <p>高速化のためにつかえるものや、2つの関数の組み合わせで可能な処理などについてはここには記述していません。</p>
 
 <h3>SV の操作</h3>
+
+<h4><code>sv_dump(SV* sv)</code></h4>
+
+<p>SV の中身をダンプして出力します。Devel::Peek::Dump とおなじです。
+デバッグ時にはやたらとつかいます。</p>
 
 <h4><code>SvREFCNT_inc(SV*)</code></h4>
 
@@ -477,6 +643,21 @@ if (!ret) {
 <h3><a href="http://cpansearch.perl.org/src/RURBAN/illguts-0.44/index.html">illguts</a></h3>
 
 <p>Perl の内部構造を画像まじりで解説してくれるページです。</p>
+
+<h2>(コラム) C99 と XS</h2>
+
+<p>Visual Studio では C99 がサポートされていないので、C99 スタイルで書いてあるモジュールを CPAN にあげていると、バグレポートがくるので注意が必要です。</p>
+
+<p>対応策は以下の3つのうちのいずれかです。</p>
+
+<ul>
+<li>C89 スタイルになおす</li>
+<li>Visual Studio を無視する</li>
+<li>C++ としてアップする</li>
+</ul>
+
+
+<p>XS モジュールを Windows でうごくようにがんばっても、そもそも OS の問題や Perl の Windows 対応の問題などで問題がおきて面倒なことになるだけだったりするので、Visual Studio のときは Makefile.PL で N/A にしてしまってもよいかな、と最近は考えています(重要なモジュールはのぞく)。</p>
 
 <h2>まとめ</h2>
 
