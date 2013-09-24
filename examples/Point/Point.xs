@@ -10,20 +10,20 @@ typedef struct {
     int y;
 } Point;
 
-Point* point_new(int x, int y) {
+Point* Point_new(int x, int y) {
     Point *p = malloc(sizeof(Point));
     p->x = x;
     p->y = y;
     return p;
 }
 
-void point_free(Point* point) {
+void Point_free(Point* point) {
     free(point);
 }
 
 #define XS_STATE(type, x)     (INT2PTR(type, SvROK(x) ? SvIV(SvRV(x)) : SvIV(x)))
 
-#define XS_STRUCT2OBJ(sv, class, obj, is_root) \
+#define XS_STRUCT2OBJ(sv, class, obj) \
     sv = newSViv(PTR2IV(obj));  \
     sv = newRV_noinc(sv); \
     sv_bless(sv, gv_stashpv(class, 1)); \
@@ -85,6 +85,6 @@ PPCODE:
     }
 
     Point* point = XS_STATE(Point*, ST(0));
-    point_free(point);
+    Point_free(point);
     XSRETURN(0);
 }
