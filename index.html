@@ -244,12 +244,15 @@ say $p-&gt;x; # =&gt; 5
 say $p-&gt;y; # =&gt; 9
 </code></pre><h2>基本的な Perl API<a class="toc-anchor" href="#n19" name="n19">&dagger;</a></h2>
     <p>以下に基本的な Perl API について説明します。ベーシックな操作は網羅しているつもりですが、「これがあったほうがいいのでは?」という意見があれば github issues にておしらせください。<p>高速化のためにつかえるものや、2つの関数の組み合わせで可能な処理などについてはここには記述していません。<h3>SV の操作<a class="toc-anchor" href="#n20" name="n20">&dagger;</a></h3>
-    <h4><code>sv_dump(SV* sv)</code></h4>
-    <p>SV の中身をダンプして出力します。Devel::Peek::Dump とおなじです。 デバッグ時にはやたらとつかいます。<h4><code>newSVsv(SV*)</code></h4>
-    <p>SVをコピーして新しいSVを作ります。XSの世界ではPerlの世界とちがって代入や配列への保存時にコピーが発生しないので、必要なときにきちんとコピーをしないとバグのもとになります。たとえば、XSUBの引数をオブジェクトに保存するときは<code>newSVsv</code>などでコピーすべきです。<h4><code>SvREFCNT_inc(SV*)</code></h4>
-    <p>SV のリファレンスカウントをインクリメントします。<h4><code>SvREFCNT_dec(SV*)</code></h4>
-    <p>SV のリファレンスカウントをインクリメントします。<h4><code>IV iv = SvIV(SV* sv)</code></h4>
-    <p>SV 構造体から IV をとりだします。IV がふくまれていない SV だった場合には、自動的に変換がはしります。<h4><code>char* ptr = SvPV_nolen(SV* sv)</code></h4>
+    <h4>SV の中身をダンプしたい</h4><pre><code>use Devel::Peek;
+Dump($sv);
+</code></pre><p>みたいなのを XS の世界ではどうやるのでしょうか?<pre><code>sv_dump(sv)
+</code></pre><p>SV の中身をダンプして出力します。Devel::Peek::Dump とおなじです。 デバッグ時にはやたらとつかいます。<h4>新しい SV をつくりたい</h4><pre><code>SV* new_sv = newSVsv(sv);
+</code></pre><p>SVをコピーして新しいSVを作ります。XSの世界ではPerlの世界とちがって代入や配列への保存時にコピーが発生しないので、必要なときにきちんとコピーをしないとバグのもとになります。たとえば、XSUBの引数をオブジェクトに保存するときは<code>newSVsv</code>などでコピーすべきです。<h4>参照カウンターをインクリメントしたい</h4><pre><code>SvREFCNT_inc(sv);
+</code></pre><p>SV のリファレンスカウントをインクリメントします。<h4>参照カウンターをデクリメントしたい</h4><pre><code>SvREFCNT_dec(sv);
+</code></pre><p>SV のリファレンスカウントをインクリメントします。<h4>SV 構造体から整数値(IV)をとりだしたい</h4><pre><code>IV iv = SvIV(sv);
+</code></pre><p>SV 構造体から IV をとりだします。IV がふくまれていない SV だった場合には、自動的に変換がはしります。<h4>SV 構造体から浮動小数点値(NV)をとりだしたい</h4><pre><code>NV nv = SvNV(sv);
+</code></pre><p>SV 構造体から IV をとりだします。IV がふくまれていない SV だった場合には、自動的に変換がはしります。<h4><code>char* ptr = SvPV_nolen(SV* sv)</code></h4>
     <p>SV から文字列をとりだします。<h4><code>char* ptr = SvPV(SV* sv, STRLEN len)</code></h4>
     <p>これは曲者。SV から文字列をとりだしつつ、長さの情報もえます。マクロでやってるので奇妙なかんじになってしまっている。<pre><code>STRLEN len;
 char* ptr = SvPV(sv, len);
