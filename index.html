@@ -25,6 +25,7 @@
     </style>
   </head>
   <body>
+    <a href="https://github.com/xsubtut/xsubtut.github.io"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_red_aa0000.png" alt="Fork me on GitHub"></a>
     <div class="container">
         <div class="row">
             <div class="col-md-9">
@@ -307,11 +308,9 @@ sv_setsv(*av_fetch(av, key, TRUE), sv);
 </code></pre><p>新しい Hash をつくるには <code>newHV()</code> をよびます。<pre><code>HV* = newHV();
 </code></pre><p>この HV の参照カウントは1です。<h3>RV<a class="toc-anchor" href="#n24" name="n24">&dagger;</a></h3>
     <h3>グローバル変数<a class="toc-anchor" href="#n25" name="n25">&dagger;</a></h3>
-    <h4><code>SV* get_sv(const char *name, I32 flags)</code></h4>
-    <p><code>$Package::Variable</code> みたいなグローバル変数をとりだします。<p>flags には <code>GV_ADD</code> をわたせばなかったときには作成されます。0 をわたしたら、なかったときには NULL がかえります。<p>Perl でいうと:<pre><code>${&quot;$name&quot;}
-</code></pre><h4><code>AV* get_av(const char *name, I32 flags)</code></h4>
-    <p><code>@Package::Variable</code> みたいなグローバル変数をとりだします。<p>flags には <code>GV_ADD</code> をわたせばなかったときには作成されます。0 をわたしたら、なかったときには NULL がかえります。<p>Perl でいうと:<pre><code>@{&quot;$name&quot;}
-</code></pre><h2>さらに上をめざす<a class="toc-anchor" href="#n26" name="n26">&dagger;</a></h2>
+    <h4><code>$Package::Name::Var</code> をとりだしたい</h4><pre><code>SV * sv = get_sv(&quot;Package::Name::Var&quot;, GV_ADD);
+</code></pre><p><code>$Package::Variable</code> みたいなグローバル変数をとりだします。<p>第二引数には <code>GV_ADD</code> をわたせばなかったときには作成されます。0 をわたしたら、なかったときには NULL がかえります。 通常は <code>GV_ADD</code> わたしとく使い方がメインだとおもいます。<h4><code>@Package::Name::Var</code> をとりだしたい</h4><pre><code>AV* av = get_av(&quot;Package::Name::Var&quot;, GV_ADD);
+</code></pre><p><code>@Package::Variable</code> みたいなグローバル変数をとりだします。<p>flags には <code>GV_ADD</code> をわたせばなかったときには作成されます。0 をわたしたら、なかったときには NULL がかえります。<h2>さらに上をめざす<a class="toc-anchor" href="#n26" name="n26">&dagger;</a></h2>
     <p>本稿に書かれている範囲よりもさらに深く知りたいという方は以下のようなページを見てください。<h3><a href="http://perldoc.perl.org/perlxstut.html">perlxstut</a><a class="toc-anchor" href="#n27" name="n27">&dagger;</a></h3>
     <p>XS のチュートリアルドキュメントです。<h3><a href="http://perldoc.perl.org/perlapi.html">perlapi</a><a class="toc-anchor" href="#n28" name="n28">&dagger;</a></h3>
     <p>Perl の外部向け API が網羅されています。<h3><a href="http://perldoc.perl.org/perlguts.html">perlguts</a><a class="toc-anchor" href="#n29" name="n29">&dagger;</a></h3>
