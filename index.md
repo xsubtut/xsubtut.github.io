@@ -1,16 +1,12 @@
-# CによるPerl拡張入門(α)
-
 現状、本稿ははげしくかきかけです。フィードバックをおまちしております。
 
 ## はじめに
 
-Perl で C の拡張を書くときにつかう XS はむずかしい、と聞いたことがあるかとおもいますが、実際んところどうなのかというと、XS は記法がむずかしかったり、なんかルールがむずかしかったりします。
+Perl で C の拡張がスラスラと書けたら……。C の拡張がスラスラ書けたら、ネイティブのバインディングもスラスラ書けるし、ホットスポットを C で最適化するなんてこともお手の物。書けたらいいけど、XS ってなんかむずかしそう……。
 
-また、いろんな楽をするための書き方ができて便利なのですが、そのすべてを覚えるのが面倒だったりします。
+ちがうんです! 今までの XS の教え方がまちがっていたんです!この教材をつかえば、誰でも簡単に今すぐに XS を書けるようになるんです。Perl の C 拡張を書いて同僚や上司を アッー! と言わせちゃおう!
 
-なので本稿では、こまかいところをハショって、Perl の拡張ライブラリを書く方法の基礎を一気にながしこむという形式をめざします。
-
-Perl の世界では、C で書かれた組み込み関数を XSUB といいます。本稿では XS のややこしい機能をつかわずに Perl の C 拡張を、なるべくマクロを中心につかうことにより、学習コストの低減をはかります。
+この教材では XS のややこしい機能をつかわずに、Perl の C 拡張を書く方法を伝授!初心者でもすぐに C 拡張が書けるようになるぞ!
 
 ### 前提知識
 
@@ -66,7 +62,7 @@ Perl5 におけるメモリの管理はリファレンスカウントという�
 
 各 Perl API の、どのタイミングでリファレンスカウントが増減するのかを把握することが、拡張モジュールを書く上での第一歩だといえます。
 
-### mutable な SV
+### mortal な SV
 
 参照カウントで一番問題になるのは、今自分がもっている参照カウントをどうやって手放すか、ということです。
 今てばなしたら0になってしまってSVが開放されてしまうし、手放さなければメモリリーク。どうしたものか!
@@ -227,9 +223,162 @@ GIMME_V という値を参照することで、Perl における wantarray と�
 
 GIMME_V は G_ARRAY, G_VOID, G_SCALAR のうちいずれかを取ります。
 
-## ポインタをふくむ XS
+	use Gimme;
+	say join(",", Gimme::gimme());
+	say scalar(Gimme::gimme());
 
-TBD
+という風にすれば、
+
+	1,2,3
+	5963
+
+という風に、コンテキストによりちがう値を返せていることがわかります。
+
+## C の世界のポインタを扱う
+
+たとえば以下のような「点」をあつかうライブラリがあったとしましょう。
+
+	typedef struct {
+	    int x;
+	    int y;
+	} Point;
+	
+	Point* Point_new(int x, int y) {
+	    Point *p = malloc(sizeof(Point));  
+	    p->x = x;
+	    p->y = y;
+	    return p;
+	}
+	
+	void Point_free(Point* point) {
+	    free(point);
+	}
+
+このとき、XS のコードは以下のように書けます。
+
+	#define XS_STATE(type, x)     (INT2PTR(type, SvROK(x) ? SvIV(SvRV(x)) : SvIV(x)))
+
+    #define XS_STRUCT2OBJ(sv, class, obj) \
+        sv = newSViv(PTR2IV(obj));  \
+        sv = newRV_noinc(sv); \
+        sv_bless(sv, gv_stashpv(class, 1)); \
+        SvREADONLY_on(sv);
+
+    MODULE = Point		PACKAGE = Point		
+
+    void
+    new(...)
+    PPCODE:
+    {
+        if (items != 3) {
+            croak("Bad argument count: %d", items);
+        }
+
+        const char *klass = SvPV_nolen(ST(0));
+        IV x = SvIV(ST(1));
+        IV y = SvIV(ST(2));
+
+        Point *point = Point_new(x, y);
+        SV *sv;
+        XS_STRUCT2OBJ(sv, klass, point);
+        XPUSHs(sv_2mortal(sv));
+        XSRETURN(1);
+    }
+
+    void
+    x(...)
+    PPCODE:
+    {
+        if (items != 1) {
+            croak("Bad argument count: %d", items);
+        }
+
+        Point* point = XS_STATE(Point*, ST(0));
+        XPUSHs(sv_2mortal(newSViv(point->x)));
+        XSRETURN(1);
+    }
+
+    void
+    y(...)
+    PPCODE:
+    {
+        if (items != 1) {
+            croak("Bad argument count: %d", items);
+        }
+
+        Point* point = XS_STATE(Point*, ST(0));
+        XPUSHs(sv_2mortal(newSViv(point->y)));
+        XSRETURN(1);
+    }
+
+    void
+    DESTROY(...)
+    PPCODE:
+    {
+        if (items != 1) {
+            croak("Bad argument count: %d", items);
+        }
+
+        Point* point = XS_STATE(Point*, ST(0));
+        Point_free(point);
+        XSRETURN(0);
+    }
+
+以外とかわっている点はすくないですね。
+
+    const char *klass = SvPV_nolen(ST(0));
+
+`SvPV_nolen(SV*)` は、SV から `char*` つまり PV をとりだすという指令です。
+
+そして、本題は XS_STRUCT2OBJ と XS_STATE の2つのマクロですね。どうみても。
+それではこの2つをよんでいきましょう。
+
+    #define XS_STRUCT2OBJ(sv, class, obj) \
+        sv = newSViv(PTR2IV(obj));  \
+        sv = newRV_noinc(sv); \
+        sv_bless(sv, gv_stashpv(class, 1)); \
+        SvREADONLY_on(sv);
+
+4行もある! ややこしいですね。こんなのみてられないので、マクロを展開しながら考えてみましょう。
+
+        Point *point = Point_new(x, y);
+        SV *sv = newSViv(PTR2IV(point));
+        sv = newRV_noinc(sv);
+        sv_bless(sv, gv_stachpv(klass, 1));
+        SvREADONLY_on(sv);
+        XPUSHs(sv_2mortal(sv));
+        XSRETURN(1);
+
+はい。わかりやすくなりました! よね?
+
+ではあらためて一行ずつよんでいきましょう。
+
+        Point *point = Point_new(x, y);
+
+C の API をよんで、ポインタをえました。
+
+        SV *sv = newSViv(PTR2IV(point));
+
+ポインタを `IV PTR2IV(void*)` のマクロで、IV 型に変換します。そして `SV* newSViv(IV)` で SV 型に変換。
+
+        sv = newRV_noinc(sv);
+
+これで、リファレンスにしています。ここまでで、`\do { my $ptr = 0xdeadfhbeef }` ってやったときの状態になっているわけですね。
+
+        sv_bless(sv, gv_stachpv(klass, 1));
+
+さらに、ここから bless します。`bless \do { my $ptr = 0xdeadfhbeef }, "Point"` とした状態になったわけです。gv_stashpv というのは stash ってやつをとりだす関数です。あまり深くかんがえなくていいです。
+
+
+
+### 動作確認
+
+以下のようにして動作確認ができます。
+
+	use Point;
+	my $p = Point->new(5,9);
+	say $p->x; # => 5
+	say $p->y; # => 9
 
 ## 基本的な Perl API
 
@@ -238,6 +387,24 @@ TBD
 高速化のためにつかえるものや、2つの関数の組み合わせで可能な処理などについてはここには記述していません。
 
 ### SV の操作
+
+#### SV の中身をダンプしたい
+
+    use Devel::Peek;
+    Dump($sv);
+
+みたいなのを XS の世界ではどうやるのでしょうか?
+
+    sv_dump(sv)
+
+SV の中身をダンプして出力します。Devel::Peek::Dump とおなじです。
+デバッグ時にはやたらとつかいます。
+
+#### 新しい SV をつくりたい
+
+    SV* new_sv = newSVsv(sv);
+
+SVをコピーして新しいSVを作ります。XSの世界ではPerlの世界とちがって代入や配列への保存時にコピーが発生しないので、必要なときにきちんとコピーをしないとバグのもとになります。たとえば、XSUBの引数をオブジェクトに保存するときは`newSVsv`などでコピーすべきです。
 
 #### 参照カウンターをインクリメントしたい
 
@@ -305,13 +472,11 @@ SV から文字列をとりだします。
 
 みたいなのをやるにはどうしたらいいのでしょうか。
 
-    SvREFCNT_inc(sv);
-    av_push(av, sv);
+    av_push(av, newSVsv(sv));
 
 配列に要素を push します。
 
-av_push では sv のリファレンスカウントは操作されないので、インクリメントしてからいれてください。
-上の例では、newSViv の
+`av_push` にかぎらず、配列やハッシュに保存するAPIはSVのコピーを行いませんので自分でコピーします。パフォーマンスのためにコピーを省略したい場合は、SvREFCNT_inc でリファレンスカウントを増やしてください。
 
 #### 配列を pop したい
 
@@ -331,8 +496,6 @@ av_push では sv のリファレンスカウントは操作されないので�
 
     SV* sv = av_shift(av);
 
-`av_shift(AV* av, SV*sv)`
-
 配列の要素を shift します。Perl で `shift @a` するのとおなじです。
 
 #### 配列を unshift したい。
@@ -341,10 +504,9 @@ av_push では sv のリファレンスカウントは操作されないので�
 
 みたいなのをやるにはどうしたらいいのでしょうか。
 
-    SvREFCNT_inc(sv);
-    av_unshift(av, sv);
+    av_unshift(av, newSVsv(sv));
 
-sv のリファレンスカウントは操作されないので、インクリメントしてからいれてください。
+``av_push`` と同じく、SVのコピーを作って入れます。
 
 #### 配列の要素をとりだしたい
 
@@ -368,13 +530,9 @@ sv のリファレンスカウントは操作されないので、インクリ�
 みたいなのをやるにはどうしたらいいのでしょうか。
 
     I32 key = 59;
-    SvREFCNT_inc(sv);
-    SV ** ret = av_store(av, key, sv); 
-    if (!ret) {
-        SvREFCNT_dec(sv);
-    }
+    sv_setsv(*av_fetch(av, key, TRUE), sv);
 
-`av_store` でよいです。ただ、av_store には癖があって、格納に失敗したり、tied array だったりした場合に NULL がかえってきます。NULL がかえってきたときにはリファレンスカウントをデクリメントしてあげないといけないことに注意してください。
+`av_store` を使うこともできますが、`av_store`には癖があるので`av_fetch`の第三引数lvalueをtrueにし、それに対して`sv_setsv`で代入するのがよいです。代入したい値がIVやNVなら、`sv_setsv`のかわりに`sv_setiv`や`sv_setnv`を使ってもかまいません。
 
 使い方がややこしいので `av_push` や `av_unshift` ですませられるときは、そちらをつかっといた方が楽です。
 
@@ -427,9 +585,24 @@ Perl の外部向け API が網羅されています。
 ### [perlguts](http://perldoc.perl.org/perlguts.html)
 Perl の内部のことが解説されてます。
 
+### [perlclib](http://perldoc.perl.org/perlclib.html)
+C標準ライブラリを使用する際の、注意点(主に代替すべき API)について記載されています。
+
 ### [illguts](http://cpansearch.perl.org/src/RURBAN/illguts-0.44/index.html)
 
 Perl の内部構造を画像まじりで解説してくれるページです。
+
+## (コラム) C99 と XS
+
+Visual Studio では C99 がサポートされていないので、C99 スタイルで書いてあるモジュールを CPAN にあげていると、バグレポートがくるので注意が必要です。
+
+対応策は以下の3つのうちのいずれかです。
+
+ * C89 スタイルになおす
+ * Visual Studio を無視する
+ * C++ としてアップする
+
+XS モジュールを Windows でうごくようにがんばっても、そもそも OS の問題や Perl の Windows 対応の問題などで問題がおきて面倒なことになるだけだったりするので、Visual Studio のときは Makefile.PL で N/A にしてしまってもよいかな、と最近は考えています(重要なモジュールはのぞく)。
 
 ## まとめ
 
