@@ -265,7 +265,7 @@ char* ptr = SvPV(sv, len);
 </code></pre><p><code>av_pop</code> で配列の要素を pop します。空の配列だったときには <code>&amp;PL_sv_undef</code> がかえってきます。<h4>配列を shift したい</h4><pre><code>$sv = shift @av;
 </code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>SV* sv = av_shift(av);
 </code></pre><p>配列の要素を shift します。Perl で <code>shift @a</code> するのとおなじです。<h4>配列を unshift したい。</h4><pre><code>unshift @av, $sv;
-</code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>av_unshift(av, sv_mortalcopy(sv);
+</code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>av_unshift(av, newSVsv(sv));
 </code></pre><p><code>av_push</code> と同じく、SVのコピーを作って入れます。<h4>配列の要素をとりだしたい</h4><pre><code>my $key = 59;
 my $sv = $av[$key];
 </code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>I32 key = 59;

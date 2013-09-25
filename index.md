@@ -483,7 +483,7 @@ SV から文字列をとりだします。
 
 みたいなのをやるにはどうしたらいいのでしょうか。
 
-    av_unshift(av, sv_mortalcopy(sv);
+    av_unshift(av, newSVsv(sv));
 
 ``av_push`` と同じく、SVのコピーを作って入れます。
 
