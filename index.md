@@ -581,25 +581,22 @@ SV から文字列をとりだします。
 
 ### グローバル変数
 
-#### `SV*     get_sv(const char *name, I32 flags)`
+#### `$Package::Name::Var` をとりだしたい
+
+    SV * sv = get_sv("Package::Name::Var", GV_ADD);
 
 `$Package::Variable` みたいなグローバル変数をとりだします。
 
-flags には `GV_ADD` をわたせばなかったときには作成されます。0 をわたしたら、なかったときには NULL がかえります。
+第二引数には `GV_ADD` をわたせばなかったときには作成されます。0 をわたしたら、なかったときには NULL がかえります。
+通常は `GV_ADD` わたしとく使い方がメインだとおもいます。
 
-Perl でいうと:
+#### `@Package::Name::Var` をとりだしたい
 
-    ${"$name"}
-
-#### `AV*     get_av(const char *name, I32 flags)`
+    AV* av = get_av("Package::Name::Var", GV_ADD);
 
 `@Package::Variable` みたいなグローバル変数をとりだします。
 
 flags には `GV_ADD` をわたせばなかったときには作成されます。0 をわたしたら、なかったときには NULL がかえります。
-
-Perl でいうと:
-
-    @{"$name"}
 
 ## さらに上をめざす
 
