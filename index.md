@@ -24,7 +24,7 @@ Perl の内部データは構造体におさまっています。そのあたり
 
 継承関係にあるものは親にキャストが可能です。たとえば、`AV*` は `SV*` にキャストできます。
 
-<img src="http://cpansearch.perl.org/src/RURBAN/illguts-0.44/svtypes-14.png">
+<a href="http://cpansearch.perl.org/src/RURBAN/illguts-0.44/svtypes-14.png"><img src="http://cpansearch.perl.org/src/RURBAN/illguts-0.44/svtypes-14.png"></a>
 (画像は [illguts](http://search.cpan.org/dist/illguts/) より)
 
 ### SV
