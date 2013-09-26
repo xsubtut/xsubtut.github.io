@@ -35,7 +35,7 @@
         <hr />
         <div class="row">
             <div class="col-md-3">
-                &nbsp;&nbsp;<a href="#n1">はじめに</a><br>&nbsp;&nbsp;&nbsp;<a href="#n2">前提知識</a><br>&nbsp;&nbsp;<a href="#n3">XS とは</a><br>&nbsp;&nbsp;<a href="#n4">型を知る</a><br>&nbsp;&nbsp;&nbsp;<a href="#n5">SV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n6">IV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n7">NV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n8">AV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n9">HV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n10">RV</a><br>&nbsp;&nbsp;<a href="#n11">リファレンスカウント</a><br>&nbsp;&nbsp;&nbsp;<a href="#n12">mortal な SV</a><br>&nbsp;&nbsp;<a href="#n13">なにはなくとも Hello, world!</a><br>&nbsp;&nbsp;&nbsp;<a href="#n14">はじめての XS</a><br>&nbsp;&nbsp;&nbsp;<a href="#n15">XS モジュールのロード</a><br>&nbsp;&nbsp;<a href="#n16">引数を処理し、値を返す XS</a><br>&nbsp;&nbsp;<a href="#n17">コンテキストを読む XS</a><br>&nbsp;&nbsp;<a href="#n18">C の世界のポインタを扱う</a><br>&nbsp;&nbsp;&nbsp;<a href="#n19">動作確認</a><br>&nbsp;&nbsp;<a href="#n20">基本的な Perl API</a><br>&nbsp;&nbsp;&nbsp;<a href="#n21">SV の操作</a><br>&nbsp;&nbsp;&nbsp;<a href="#n22">配列の操作</a><br>&nbsp;&nbsp;&nbsp;<a href="#n23">HV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n24">RV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n25">グローバル変数</a><br>&nbsp;&nbsp;<a href="#n26">さらに上をめざす</a><br>&nbsp;&nbsp;&nbsp;<a href="#n27">perlxstut</a><br>&nbsp;&nbsp;&nbsp;<a href="#n28">perlapi</a><br>&nbsp;&nbsp;&nbsp;<a href="#n29">perlguts</a><br>&nbsp;&nbsp;&nbsp;<a href="#n30">perlclib</a><br>&nbsp;&nbsp;&nbsp;<a href="#n31">illguts</a><br>&nbsp;&nbsp;<a href="#n32">(コラム) C99 と XS</a><br>&nbsp;&nbsp;<a href="#n33">まとめ</a><br>&nbsp;&nbsp;<a href="#n34">Future Plan</a>
+                &nbsp;&nbsp;<a href="#n1">はじめに</a><br>&nbsp;&nbsp;&nbsp;<a href="#n2">前提知識</a><br>&nbsp;&nbsp;<a href="#n3">XS とは</a><br>&nbsp;&nbsp;<a href="#n4">型を知る</a><br>&nbsp;&nbsp;&nbsp;<a href="#n5">SV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n6">IV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n7">NV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n8">AV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n9">HV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n10">RV</a><br>&nbsp;&nbsp;<a href="#n11">リファレンスカウント</a><br>&nbsp;&nbsp;&nbsp;<a href="#n12">mortal な SV</a><br>&nbsp;&nbsp;<a href="#n13">なにはなくとも Hello, world!</a><br>&nbsp;&nbsp;&nbsp;<a href="#n14">はじめての XS</a><br>&nbsp;&nbsp;&nbsp;<a href="#n15">XS モジュールのロード</a><br>&nbsp;&nbsp;<a href="#n16">引数を処理し、値を返す XS</a><br>&nbsp;&nbsp;<a href="#n17">コンテキストを読む XS</a><br>&nbsp;&nbsp;<a href="#n18">C の世界のポインタを扱う</a><br>&nbsp;&nbsp;&nbsp;<a href="#n19">動作確認</a><br>&nbsp;&nbsp;<a href="#n20">基本的な Perl API</a><br>&nbsp;&nbsp;&nbsp;<a href="#n21">SV の操作</a><br>&nbsp;&nbsp;&nbsp;<a href="#n22">配列の操作</a><br>&nbsp;&nbsp;&nbsp;<a href="#n23">HV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n24">RV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n25">グローバル変数</a><br>&nbsp;&nbsp;<a href="#n26">さらに上をめざす</a><br>&nbsp;&nbsp;&nbsp;<a href="#n27">perlxstut</a><br>&nbsp;&nbsp;&nbsp;<a href="#n28">perlapi</a><br>&nbsp;&nbsp;&nbsp;<a href="#n29">perlguts</a><br>&nbsp;&nbsp;&nbsp;<a href="#n30">perlclib</a><br>&nbsp;&nbsp;&nbsp;<a href="#n31">illguts</a><br>&nbsp;&nbsp;<a href="#n32">(コラム) C99 と XS</a><br>&nbsp;&nbsp;<a href="#n33">まとめ</a><br>&nbsp;&nbsp;<a href="#n34">Contributors</a><br>&nbsp;&nbsp;&nbsp;<a href="#n35">監修</a><br>&nbsp;&nbsp;&nbsp;<a href="#n36">Contributors</a>
             </div>
             <div class="col-md-6">
                 
@@ -283,7 +283,7 @@ char* ptr = SvPV(sv, len);
     SV *sv = SvRV(ref);
     sv_dump(sv);
 }
-</code></pre><p><code>SvRV</code> で、リファレンスの先をとりだすことができます。<p>ここで注意すべきは、<code>SvRV</code> をする前には <code>SvROK</code> でデリファレンス可能かどうかをチェックしておく必要があるってコト。 リファレンスじゃないものを SvRV すると一発で SEGV なので注意して!<h4>bless したいのですが</h4><pre><code>bless $ref, &#39;Class&#39;;
+</code></pre><p><code>SvRV</code> で、リファレンスの先をとりだすことができます。<p>ここで注意すべきは、<code>SvRV</code> をする前には <code>SvROK</code> でデリファレンス可能かどうかをチェックしておく必要があるってコト。 リファレンスじゃないものを SvRV すると一発で SEGV なので注意して!SvROK をよばないで<h4>bless したいのですが</h4><pre><code>bless $ref, &#39;Class&#39;;
 </code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>ref = sv_bless(ref, gv_stash_pv(&quot;Class::Name&quot;, 1));
 </code></pre><p>とすればいいです。ここで ref はリファレンスがはいった <code>SV*</code> で、<code>Class::Name</code> はクラス名です。<h3>配列の操作<a class="toc-anchor" href="#n22" name="n22">&dagger;</a></h3>
     <h4>配列をつくりたい</h4><pre><code>my @av;
@@ -323,9 +323,11 @@ sv_setsv(*av_fetch(av, key, TRUE), sv);
     <p>Visual Studio では C99 がサポートされていないので、C99 スタイルで書いてあるモジュールを CPAN にあげていると、バグレポートがくるので注意が必要です。<p>対応策は以下の3つのうちのいずれかです。<ul>
       <li>C89 スタイルになおす<li>Visual Studio を無視する<li>C++ としてアップする</ul>
     <p>XS モジュールを Windows でうごくようにがんばっても、そもそも OS の問題や Perl の Windows 対応の問題などで問題がおきて面倒なことになるだけだったりするので、Visual Studio のときは Makefile.PL で N/A にしてしまってもよいかな、と最近は考えています(重要なモジュールはのぞく)。<h2>まとめ<a class="toc-anchor" href="#n33" name="n33">&dagger;</a></h2>
-    <p>本稿は、いかがでしたでしょうか。XS を「書く」ことについての基本的な知識はついたのではないかとおもいます。<p>XS でいろいろかいて CPAN にジャンジャンとアップしましょう。<p>質問、ご要望は github issues にてうけつけていますので、お気軽にどうぞ。<h2>Future Plan<a class="toc-anchor" href="#n34" name="n34">&dagger;</a></h2>
+    <p>本稿は、いかがでしたでしょうか。XS を「書く」ことについての基本的な知識はついたのではないかとおもいます。<p>XS でいろいろかいて CPAN にジャンジャンとアップしましょう。<p>質問、ご要望は github issues にてうけつけていますので、お気軽にどうぞ。<h2>Contributors<a class="toc-anchor" href="#n34" name="n34">&dagger;</a></h2>
+    <h3>監修<a class="toc-anchor" href="#n35" name="n35">&dagger;</a></h3>
+    <p>tokuhirom<h3>Contributors<a class="toc-anchor" href="#n36" name="n36">&dagger;</a></h3>
     <ul>
-      <li>構造体を隠蔽する方法</ul>
+      <li>gfx<li>Cside</ul>
   
 
             </div>
