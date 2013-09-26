@@ -279,7 +279,11 @@ Dump($sv);
 </code></pre><p>SV 構造体から IV をとりだします。IV がふくまれていない SV だった場合には、自動的に変換がはしります。<h4>SV 構造体から文字列をとりだしたい</h4><pre><code>char* ptr = SvPV_nolen(SV* sv);
 </code></pre><p>SV から文字列をとりだします。<p>文字列長さも必要なときは <code>SvPV()</code> をつかえばいいのですが、<pre><code>STRLEN len;
 char* ptr = SvPV(sv, len);
-</code></pre><p>これは曲者。SV から文字列をとりだしつつ、長さの情報もえます。マクロでやってるので奇妙なかんじになってしまっている。 len のところにしれっと長さ情報がかきこまれます。<h4>bless したいのですが</h4><pre><code>bless $ref, &#39;Class&#39;;
+</code></pre><p>これは曲者。SV から文字列をとりだしつつ、長さの情報もえます。マクロでやってるので奇妙なかんじになってしまっている。 len のところにしれっと長さ情報がかきこまれます。<h4>デリファレンスしたい</h4><pre><code>if (SvROK(ref)) {
+    SV *sv = SvRV(ref);
+    sv_dump(sv);
+}
+</code></pre><p><code>SvRV</code> で、リファレンスの先をとりだすことができます。<p>ここで注意すべきは、<code>SvRV</code> をする前には <code>SvROK</code> でデリファレンス可能かどうかをチェックしておく必要があるってコト。 リファレンスじゃないものを SvRV すると一発で SEGV なので注意して!<h4>bless したいのですが</h4><pre><code>bless $ref, &#39;Class&#39;;
 </code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>ref = sv_bless(ref, gv_stash_pv(&quot;Class::Name&quot;, 1));
 </code></pre><p>とすればいいです。ここで ref はリファレンスがはいった <code>SV*</code> で、<code>Class::Name</code> はクラス名です。<h3>配列の操作<a class="toc-anchor" href="#n22" name="n22">&dagger;</a></h3>
     <h4>配列をつくりたい</h4><pre><code>my @av;
