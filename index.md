@@ -22,32 +22,10 @@ XS は本当にいろいろできて便利なのですが、いざこったこ�
 
 Perl の内部データは構造体におさまっています。そのあたりを把握していきましょう。
 
-継承関係にあるものは親にキャストが可能です。たとえば、AV* は SV* にキャストできます。
+継承関係にあるものは親にキャストが可能です。たとえば、`AV*` は `SV*` にキャストできます。
 
-
-
-                 B::SV
-                   |
-      +------------+------------+------------+
-      |            |            |            |
-    B::PV        B::IV        B::NV        B::RV
-        \         /           /
-         \       /           /
-          B::PVIV           /
-               \           /
-                \         /
-                 \       /
-                  B::PVNV
-                     |
-                     |
-                  B::PVMG
-                     |
-         +-----+-----+-----+-----+
-         |     |     |     |     |
-       B::AV B::GV B::HV B::CV B::IO
-               |           |
-               |           |
-            B::PVLV      B::FM
+<img src="http://cpansearch.perl.org/src/RURBAN/illguts-0.44/svtypes-14.png">
+(画像は [illguts](http://search.cpan.org/dist/illguts/) より)
 
 ### SV
 
