@@ -251,8 +251,14 @@ say $p-&gt;y; # =&gt; 9
     <h4>SV の中身をダンプしたい</h4><pre><code>use Devel::Peek;
 Dump($sv);
 </code></pre><p>みたいなのを XS の世界ではどうやるのでしょうか?<pre><code>sv_dump(sv)
-</code></pre><p>SV の中身をダンプして出力します。Devel::Peek::Dump とおなじです。 デバッグ時にはやたらとつかいます。<h4>新しい SV をつくりたい</h4><pre><code>SV* new_sv = newSVsv(sv);
-</code></pre><p>SVをコピーして新しいSVを作ります。XSの世界ではPerlの世界とちがって代入や配列への保存時にコピーが発生しないので、必要なときにきちんとコピーをしないとバグのもとになります。たとえば、XSUBの引数をオブジェクトに保存するときは<code>newSVsv</code>などでコピーすべきです。<h4>参照カウンターをインクリメントしたい</h4><pre><code>SvREFCNT_inc(sv);
+</code></pre><p>SV の中身をダンプして出力します。Devel::Peek::Dump とおなじです。 デバッグ時にはやたらとつかいます。<h4>新しい SV をつくりたい</h4>
+    <h5>整数値から SV をつくりたい</h5><pre><code>SV* sv = newSViv(5963);
+</code></pre><p>簡単ですね。<h5>符号なし整数値から SV をつくりたい</h5><pre><code>SV* sv = newSVuv(5963);
+</code></pre><p>簡単ですね。<h5>文字列から SV をつくりたい</h5><pre><code>SV* sv = newSVpvn(&quot;hello&quot;, strlen(&quot;hello&quot;));
+</code></pre><p>簡単ですね。<p>ここで、<code>newSVpv</code> という API もあるのですが、これは文字列の長さに 0 をあたえると strlen がよばれるという余計なお世話的機能がついていて、バグの元になりやすいので、newSVpvn をつかうようにするのがオススメです。<h5>SV から SV をつくりたい</h5><pre><code>SV* new_sv = newSVsv(sv);
+</code></pre><p>SVをコピーして新しいSVを作ります。XSの世界ではPerlの世界とちがって代入や配列への保存時にコピーが発生しないので、必要なときにきちんとコピーをしないとバグのもとになります。たとえば、XSUBの引数をオブジェクトに保存するときは<code>newSVsv</code>などでコピーすべきです。<h4>SV の値が真か偽かがしりたい</h4><pre><code>bool b = SvTRUE(sv);
+</code></pre><p>SvTRUE でわかります。<h4>sprintf したい</h4><pre><code>SV* sv = newSVpvf(&quot;%d&quot;, 3);
+</code></pre><p>newSVpvf でできます。<h4>参照カウンターをインクリメントしたい</h4><pre><code>SvREFCNT_inc(sv);
 </code></pre><p>SV のリファレンスカウントをインクリメントします。<h4>参照カウンターをデクリメントしたい</h4><pre><code>SvREFCNT_dec(sv);
 </code></pre><p>SV のリファレンスカウントをインクリメントします。<h4>SV 構造体から整数値(IV)をとりだしたい</h4><pre><code>IV iv = SvIV(sv);
 </code></pre><p>SV 構造体から IV をとりだします。IV がふくまれていない SV だった場合には、自動的に変換がはしります。<h4>SV 構造体から浮動小数点値(NV)をとりだしたい</h4><pre><code>NV nv = SvNV(sv);
