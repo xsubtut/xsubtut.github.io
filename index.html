@@ -35,7 +35,7 @@
         <hr />
         <div class="row">
             <div class="col-md-3">
-                &nbsp;&nbsp;<a href="#n1">はじめに</a><br>&nbsp;&nbsp;&nbsp;<a href="#n2">前提知識</a><br>&nbsp;&nbsp;<a href="#n3">XS とは</a><br>&nbsp;&nbsp;<a href="#n4">型を知る</a><br>&nbsp;&nbsp;&nbsp;<a href="#n5">SV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n6">IV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n7">NV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n8">AV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n9">HV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n10">RV</a><br>&nbsp;&nbsp;<a href="#n11">リファレンスカウント</a><br>&nbsp;&nbsp;&nbsp;<a href="#n12">mortal な SV</a><br>&nbsp;&nbsp;<a href="#n13">なにはなくとも Hello, world!</a><br>&nbsp;&nbsp;&nbsp;<a href="#n14">はじめての XS</a><br>&nbsp;&nbsp;&nbsp;<a href="#n15">XS モジュールのロード</a><br>&nbsp;&nbsp;<a href="#n16">引数を処理し、値を返す XS</a><br>&nbsp;&nbsp;<a href="#n17">コンテキストを読む XS</a><br>&nbsp;&nbsp;<a href="#n18">C の世界のポインタを扱う</a><br>&nbsp;&nbsp;&nbsp;<a href="#n19">動作確認</a><br>&nbsp;&nbsp;<a href="#n20">基本的な Perl API</a><br>&nbsp;&nbsp;&nbsp;<a href="#n21">SV の操作</a><br>&nbsp;&nbsp;&nbsp;<a href="#n22">配列の操作</a><br>&nbsp;&nbsp;&nbsp;<a href="#n23">HV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n24">RV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n25">グローバル変数</a><br>&nbsp;&nbsp;<a href="#n26">さらに上をめざす</a><br>&nbsp;&nbsp;&nbsp;<a href="#n27">perlxstut</a><br>&nbsp;&nbsp;&nbsp;<a href="#n28">perlapi</a><br>&nbsp;&nbsp;&nbsp;<a href="#n29">perlguts</a><br>&nbsp;&nbsp;&nbsp;<a href="#n30">perlclib</a><br>&nbsp;&nbsp;&nbsp;<a href="#n31">illguts</a><br>&nbsp;&nbsp;<a href="#n32">(コラム) C99 と XS</a><br>&nbsp;&nbsp;<a href="#n33">まとめ</a><br>&nbsp;&nbsp;<a href="#n34">Future Plan</a>
+                &nbsp;&nbsp;<a href="#n1">はじめに</a><br>&nbsp;&nbsp;&nbsp;<a href="#n2">前提知識</a><br>&nbsp;&nbsp;<a href="#n3">XS とは</a><br>&nbsp;&nbsp;<a href="#n4">型を知る</a><br>&nbsp;&nbsp;&nbsp;<a href="#n5">SV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n6">Perl のプリミティブ型</a><br>&nbsp;&nbsp;<a href="#n7">リファレンスカウント</a><br>&nbsp;&nbsp;&nbsp;<a href="#n8">mortal な SV</a><br>&nbsp;&nbsp;<a href="#n9">なにはなくとも Hello, world!</a><br>&nbsp;&nbsp;&nbsp;<a href="#n10">はじめての XS</a><br>&nbsp;&nbsp;&nbsp;<a href="#n11">XS モジュールのロード</a><br>&nbsp;&nbsp;<a href="#n12">引数を処理し、値を返す XS</a><br>&nbsp;&nbsp;<a href="#n13">コンテキストを読む XS</a><br>&nbsp;&nbsp;<a href="#n14">C の世界のポインタを扱う</a><br>&nbsp;&nbsp;&nbsp;<a href="#n15">動作確認</a><br>&nbsp;&nbsp;<a href="#n16">基本的な Perl API</a><br>&nbsp;&nbsp;&nbsp;<a href="#n17">SV の操作</a><br>&nbsp;&nbsp;&nbsp;<a href="#n18">配列の操作</a><br>&nbsp;&nbsp;&nbsp;<a href="#n19">HV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n20">RV</a><br>&nbsp;&nbsp;&nbsp;<a href="#n21">グローバル変数</a><br>&nbsp;&nbsp;<a href="#n22">さらに上をめざす</a><br>&nbsp;&nbsp;&nbsp;<a href="#n23">perlxstut</a><br>&nbsp;&nbsp;&nbsp;<a href="#n24">perlxs</a><br>&nbsp;&nbsp;&nbsp;<a href="#n25">perlapi</a><br>&nbsp;&nbsp;&nbsp;<a href="#n26">perlguts</a><br>&nbsp;&nbsp;&nbsp;<a href="#n27">perlclib</a><br>&nbsp;&nbsp;&nbsp;<a href="#n28">illguts</a><br>&nbsp;&nbsp;<a href="#n29">その他の話題</a><br>&nbsp;&nbsp;&nbsp;<a href="#n30">C99 と XS</a><br>&nbsp;&nbsp;&nbsp;<a href="#n31">ppport.h</a><br>&nbsp;&nbsp;&nbsp;<a href="#n32">Minilla で XS を書く</a><br>&nbsp;&nbsp;&nbsp;<a href="#n33">typemap</a><br>&nbsp;&nbsp;<a href="#n34">まとめ</a><br>&nbsp;&nbsp;<a href="#n35">Contributors</a><br>&nbsp;&nbsp;&nbsp;<a href="#n36">監修</a><br>&nbsp;&nbsp;&nbsp;<a href="#n37">Contributors</a>
             </div>
             <div class="col-md-6">
                 
@@ -46,40 +46,22 @@
     <p>Perl で C の拡張がスラスラと書けたら……。C の拡張がスラスラ書けたら、ネイティブのバインディングもスラスラ書けるし、ホットスポットを C で最適化するなんてこともお手の物。書けたらいいけど、XS ってなんかむずかしそう……。<p>ちがうんです! 今までの XS の教え方がまちがっていたんです!この教材をつかえば、誰でも簡単に今すぐに XS を書けるようになるんです。Perl の C 拡張を書いて同僚や上司を アッー! と言わせちゃおう!<p>この教材では XS のややこしい機能をつかわずに、Perl の C 拡張を書く方法を伝授!初心者でもすぐに C 拡張が書けるようになるぞ!<h3>前提知識<a class="toc-anchor" href="#n2" name="n2">&dagger;</a></h3>
     <p>本稿では一般的な C の知識および Perl の知識を読者がもっていることを想定しています。XS の知識や Perl の内部構造に関する知識はもっていない前提ですので、万が一そういったものが要求されている!! と感じた場合には、github issues などで教えてください。<h2>XS とは<a class="toc-anchor" href="#n3" name="n3">&dagger;</a></h2>
     <p>Perl の世界では、XS という言語をつかって C 拡張を記述します。これは基本的には C にたいするマクロ言語です。正規表現でがんばって置換しているだけなので、あまりかしこくはありません。かなりいろいろな機能があるのですが、いろいろできすぎて初心者にやさしくないので、本稿では、ごくごくシンプルな記法のみを紹介します。<p>XS は本当にいろいろできて便利なのですが、いざこったことをやろうとすると、基本的な方法にもどらざるをえない、というようなことも多発しますので、本稿ではただひたすらに基本的な方法を紹介しつづけます。<h2>型を知る<a class="toc-anchor" href="#n4" name="n4">&dagger;</a></h2>
-    <p>Perl の内部データは構造体におさまっています。そのあたりを把握していきましょう。<p>継承関係にあるものは親にキャストが可能です。たとえば、AV<em> は SV</em> にキャストできます。<pre><code>             B::SV
-               |
-  +------------+------------+------------+
-  |            |            |            |
-B::PV        B::IV        B::NV        B::RV
-    \         /           /
-     \       /           /
-      B::PVIV           /
-           \           /
-            \         /
-             \       /
-              B::PVNV
-                 |
-                 |
-              B::PVMG
-                 |
-     +-----+-----+-----+-----+
-     |     |     |     |     |
-   B::AV B::GV B::HV B::CV B::IO
-           |           |
-           |           |
-        B::PVLV      B::FM
-</code></pre><h3>SV<a class="toc-anchor" href="#n5" name="n5">&dagger;</a></h3>
-    <p>Perl のすべての値は SV から派生しています。SV は Scalar Value のことです。<h3>IV<a class="toc-anchor" href="#n6" name="n6">&dagger;</a></h3>
+    <p>Perl の内部データは構造体におさまっています。そのあたりを把握していきましょう。<h3>SV<a class="toc-anchor" href="#n5" name="n5">&dagger;</a></h3>
+    <p>Perl のすべての値は SV から派生しています。SV は Scalar Value のことです。<p>継承関係にあるものは親にキャストが可能です。たとえば、<code>AV*</code> は <code>SV*</code> にキャストできます。<p><a href="http://cpansearch.perl.org/src/RURBAN/illguts-0.44/svtypes-14.png"><img src="http://cpansearch.perl.org/src/RURBAN/illguts-0.44/svtypes-14.png" /></a> (画像は <a href="http://search.cpan.org/dist/illguts/">illguts</a> より)<h4>AV</h4>
+    <p>AV is-a SV の関係です。配列データがはいっています。SV にキャストしてつかうことができます。<h4>HV</h4>
+    <p>HV is-a SV の関係です。ハッシュです。SV にキャストしてつかうことができます。<h4>RV</h4>
+    <p>RV is-a SV の関係です。Reference Value の略です。<h3>Perl のプリミティブ型<a class="toc-anchor" href="#n6" name="n6">&dagger;</a></h3>
+    <p>SV の中には整数値や文字列値などが格納できます。文字列値と整数値は同時に両方もつことができる、というのが Perl5 のかわっているところです。<h4>IV</h4>
     <p>SV has-a IV の関係です。SV 構造体の中に IV が格納されている、とおもってください。整数値がはいっています。<pre><code>IV iv = SvIV(sv);
 </code></pre><p>とすることで、<code>SV*</code> を IV に変換できます。<pre><code>SV* sv = newSViv(iv);
-</code></pre><p>とすることで、IV を <code>SV*</code> に変換できます。<h3>NV<a class="toc-anchor" href="#n7" name="n7">&dagger;</a></h3>
-    <p>SV has-a NV の関係です。SV 構造体の中に NV が格納されている、とおもってください。浮動小数点値がはいっています。<h3>AV<a class="toc-anchor" href="#n8" name="n8">&dagger;</a></h3>
-    <p>AV is-a SV の関係です。配列データがはいっています。SV にキャストしてつかうことができます。<h3>HV<a class="toc-anchor" href="#n9" name="n9">&dagger;</a></h3>
-    <p>HV is-a SV の関係です。ハッシュです。SV にキャストしてつかうことができます。<h3>RV<a class="toc-anchor" href="#n10" name="n10">&dagger;</a></h3>
-    <p>RV is-a SV の関係です。Reference Value の略です。<h2>リファレンスカウント<a class="toc-anchor" href="#n11" name="n11">&dagger;</a></h2>
-    <p>Perl5 におけるメモリの管理はリファレンスカウントという方式でおこなわれています。これはつまり、変数ごとに「この変数は○箇所から参照されているョ」というマークをつけておき、どこからも参照されなくなったらその部分のメモリを再利用するというだけの仕組みです。<p>リファレンスカウンタ方式のメモリ管理では、このリファレンスカウンターの操作を、拡張モジュールの作者が気をつけておこなわなければなりません。<p>一方で、メモリの増減などが予測しやすい、デバッグがしやすいというメリットもあります。<p>各 Perl API の、どのタイミングでリファレンスカウントが増減するのかを把握することが、拡張モジュールを書く上での第一歩だといえます。<h3>mortal な SV<a class="toc-anchor" href="#n12" name="n12">&dagger;</a></h3>
-    <p>参照カウントで一番問題になるのは、今自分がもっている参照カウントをどうやって手放すか、ということです。 今てばなしたら0になってしまってSVが開放されてしまうし、手放さなければメモリリーク。どうしたものか!<p>ということで、Perl5 の世界では「このスコープをぬけたらこれ開放しておいてね!」と Perl5 本体にいっておくことができるようになっています。この「あとで開放しておいてね!」といっておくことを「mortal 状態にする」といいます。<p>コードで、SV を mortal にするには、<code>sv_2mortal(sv)</code> とします。<code>sv_2mortal</code> の返り値は、引数にわたした <code>SV*</code> です。<p><code>sv_2mortal</code> は、やたらめったらつかうところが多いので、XS の世界にはさまざまなショートカットが用意されています。たとえば <code>XPUSHs(sv_2mortal(sv))</code> を <code>mXPUSHs(sv)</code> などという風に省略して書けるのです。これは便利なのですが、おぼえることがふえてしまうので本稿ではこういった省略記法はふれないです。<p>(なお、iPhone/OSX のアプリケーションを開発していらっしゃる方なら autorelease みたいなものだと考えればわかりやすいです! っていうと最近はよかったのですが、最近は autorelease って時代遅れなかんじがするのでこの比喩ももはやつかえません。)<h2>なにはなくとも Hello, world!<a class="toc-anchor" href="#n13" name="n13">&dagger;</a></h2>
-    <p>前提知識の羅列が続く文章ほどダルいものもないので、実際のコードを見たい、とおもっている方も多かろう。まずは、もっともシンプルなケースを見ていこう。以下は、標準出力に &quot;Hello, world!&quot; という文字列を表示するだけの簡単なコードだ。<p>今回のコードは (TODO) で見ることができる。<h3>はじめての XS<a class="toc-anchor" href="#n14" name="n14">&dagger;</a></h3>
+</code></pre><p>とすることで、IV を <code>SV*</code> に変換できます。<h4>UV</h4>
+    <p>SV has-a UV の関係です。UV は unsigned value のことです。符号なし整数値ですね。 普段はあまり意識してつかうこともないかとおもいます。<h4>NV</h4>
+    <p>SV has-a NV の関係です。SV 構造体の中に NV が格納されている、とおもってください。浮動小数点値がはいっています。<h4>PV</h4>
+    <p>SV の中に PV(Pointer Value) が格納されています。 Pointer Value というのはつまり文字列のことです。<pre><code>char *str = SvPV_nolen(sv);
+</code></pre><p>とすることで、文字列をとりだすことができます。<h2>リファレンスカウント<a class="toc-anchor" href="#n7" name="n7">&dagger;</a></h2>
+    <p>Perl5 におけるメモリの管理はリファレンスカウントという方式でおこなわれています。これはつまり、変数ごとに「この変数は○箇所から参照されているョ」というマークをつけておき、どこからも参照されなくなったらその部分のメモリを再利用するというだけの仕組みです。<p>リファレンスカウンタ方式のメモリ管理では、このリファレンスカウンターの操作を、拡張モジュールの作者が気をつけておこなわなければなりません。<p>一方で、メモリの増減などが予測しやすい、デバッグがしやすいというメリットもあります。<p>各 Perl API の、どのタイミングでリファレンスカウントが増減するのかを把握することが、拡張モジュールを書く上での第一歩だといえます。<h3>mortal な SV<a class="toc-anchor" href="#n8" name="n8">&dagger;</a></h3>
+    <p>参照カウントで一番問題になるのは、今自分がもっている参照カウントをどうやって手放すか、ということです。 今てばなしたら0になってしまってSVが開放されてしまうし、手放さなければメモリリーク。どうしたものか!<p>ということで、Perl5 の世界では「このスコープをぬけたらこれ開放しておいてね!」と Perl5 本体にいっておくことができるようになっています。この「あとで開放しておいてね!」といっておくことを「mortal 状態にする」といいます。<p>コードで、SV を mortal にするには、<code>sv_2mortal(sv)</code> とします。<code>sv_2mortal</code> の返り値は、引数にわたした <code>SV*</code> です。<p><code>sv_2mortal</code> は、やたらめったらつかうところが多いので、XS の世界にはさまざまなショートカットが用意されています。たとえば <code>XPUSHs(sv_2mortal(sv))</code> を <code>mXPUSHs(sv)</code> などという風に省略して書けるのです。これは便利なのですが、おぼえることがふえてしまうので本稿ではこういった省略記法はふれないです。<p>(なお、iPhone/OSX のアプリケーションを開発していらっしゃる方なら autorelease みたいなものだと考えればわかりやすいです! っていうと最近はよかったのですが、最近は autorelease って時代遅れなかんじがするのでこの比喩ももはやつかえません。)<h2>なにはなくとも Hello, world!<a class="toc-anchor" href="#n9" name="n9">&dagger;</a></h2>
+    <p>前提知識の羅列が続く文章ほどダルいものもないので、実際のコードを見たい、とおもっている方も多かろう。まずは、もっともシンプルなケースを見ていこう。以下は、標準出力に &quot;Hello, world!&quot; という文字列を表示するだけの簡単なコードだ。<p>今回のコードはすべて<a href="https://github.com/xsubtut/xsubtut.github.io/tree/master/examples">github</a> で見ることができる。<h3>はじめての XS<a class="toc-anchor" href="#n10" name="n10">&dagger;</a></h3>
     <p>以下が今回よむ XS コードの全貌である。XS で書かれたコードはなんとも珍妙な見た目をしているが、慣れてしまえばどうということはない。美人は三日で飽きるがブスは三日で慣れるというではないか。<pre><code>#define PERL_NO_GET_CONTEXT
 #include &quot;EXTERN.h&quot;
 #include &quot;perl.h&quot;
@@ -104,12 +86,12 @@ PPCODE:
 </code></pre><p>ここは、モジュールとパッケージの指定だ。一つのファイルに複数個書くことができる。この宣言以下の部分は、<code>PACKAGE=</code> で指定したパッケージにひもづくこととなる。<pre><code>void
 hello(...)
 PPCODE:
-</code></pre><p>ここは、もうなんというか、そういうものだとおもってください!! ってかんじである。値を返そうが返すまいがとりあえず void を指定し、引数は可変長かのように指定し、PPCODE: という修飾子を指定することにより、おぼえることをすごくへらすことができるんです! そういうものなんです! なお、hello の部分が関数名となることはいうまでもない。<p>さていよいよ本文だ。<code>PerlIO_printf()</code> は printf 関数を XSUB の世界からコールするときにつかう API です。PerlIO を通しておこなってくれるのがポイントです。<code>PerlIO_stdout()</code> は <code>*STDOUT</code> に対して処理をおこなうよ、という意味ですね。あとの引数は通常の printf(1) とおなじです。<p><code>XSRETURN(0)</code> では返り値の数を指定しています。今回は一個も返り値はないので <code>XSRETURN(0)</code> としています。<h3>XS モジュールのロード<a class="toc-anchor" href="#n15" name="n15">&dagger;</a></h3>
+</code></pre><p>ここは、もうなんというか、そういうものだとおもってください!! ってかんじである。値を返そうが返すまいがとりあえず void を指定し、引数は可変長かのように指定し、PPCODE: という修飾子を指定することにより、おぼえることをすごくへらすことができるんです! そういうものなんです! なお、hello の部分が関数名となることはいうまでもない。<p>さていよいよ本文だ。<code>PerlIO_printf()</code> は printf 関数を XSUB の世界からコールするときにつかう API です。PerlIO を通しておこなってくれるのがポイントです。<code>PerlIO_stdout()</code> は <code>*STDOUT</code> に対して処理をおこなうよ、という意味ですね。あとの引数は通常の printf(1) とおなじです。<p><code>XSRETURN(0)</code> では返り値の数を指定しています。今回は一個も返り値はないので <code>XSRETURN(0)</code> としています。<h3>XS モジュールのロード<a class="toc-anchor" href="#n11" name="n11">&dagger;</a></h3>
     <p>XS モジュールは XSLoader というモジュールをつかってロードする。DynaLoader というモジュールでロードしてもよいのだが、原状では XSLoader をつかう方が主流なので、こちらをつかっておけば間違いはない。<p>使い方は簡単で、以下のようにすればよい。<pre><code>package Hello;
 our $VERSION=&quot;0.01&quot;;
 require XSLoader;
 XSLoader::load(__PACKAGE__, $VERSION);
-</code></pre><p>これはもうテンプレだとおもってつかっていればよい。<p>なお、<a href="https://metacpan.org/module/Minilla">Minilla</a> のようなスケルトンジェネレータをつかえば、このあたりのコードは自動生成されるので、通常は意識する必要はない。<h2>引数を処理し、値を返す XS<a class="toc-anchor" href="#n16" name="n16">&dagger;</a></h2>
+</code></pre><p>これはもうテンプレだとおもってつかっていればよい。<p>なお、<a href="https://metacpan.org/module/Minilla">Minilla</a> のようなスケルトンジェネレータをつかえば、このあたりのコードは自動生成されるので、通常は意識する必要はない。<h2>引数を処理し、値を返す XS<a class="toc-anchor" href="#n12" name="n12">&dagger;</a></h2>
     <p>Hello, world の例では引数の処理や値を返す処理がなかった。説明を簡略化するためにはぶいたのだが、実際のところ、引数もなく値もかえさない XS など通常は意味がないだろう。<p>そういうわけで、そういった処理をする XS を書いてみよう。<pre><code>MODULE = Sum            PACKAGE = Sum
 
 void
@@ -135,7 +117,7 @@ PPCODE:
 </code></pre><p><code>ST(n)</code> はスタックにつまれた値のうち、n番目のものをとりだすというマクロ。これもどうということはない。ただ第一引数と第二引数をとりだして変数にいれただけだ。<pre><code>    IV ret = SvIV(a) + SvIV(b);
 </code></pre><p><code>SvIV(SV*)</code> は SV 構造体の中にはいっている IV (整数値)をとりだすマクロだ。さて、ここで注意が必要なのが、Perl の世界では文字列と整数がなんとなく自動的に変換されるということだ。そう。この SvIV で、SV の中身が文字列だった場合も IV (整数値)に変換されるのだ。そういうわけなので <code>Sum::sum(&quot;5963&quot;, &quot;4649&quot;)</code> のような呼出の場合でも問題なく処理はおこなわれる。<p>加算自体は普通の C レベルの加算となっていて、その結果を IV に保存している。IV は int ととかそういうものが typedef されたものだ(Configure script の設定によって IV のビット幅は変更されることに注意せよ)。<p>さて、計算がおわったので、いよいよ値を返却しよう。<pre><code>    XPUSHs(sv_2mortal(newSViv(ret)));
 </code></pre><p>ここは3つもマクロ/関数がいりまじっていてちょっとだけややこしい。まずは内側から見ていこう。<code>newSViv(IV)</code> で、該当の IV をもった SV を生成している。IV は C の世界での整数型なので、そのまま Perl の世界にもどすことはできないのだ。Perl の世界であつかえるのはただ SV 型のみであることを思いだしていただきたい。<p><code>sv_2mortal(SV*)</code> は、SV 構造体の SVs_TEMP フラッグをたてる君です。このフラッグがたっているとどうなるかというと、スコープをぬけたタイミングで、参照カウンタを1へらしてくれます。これはつまり、Objective-C でいうところの autorelease みたいなものだとおもってください。<pre><code>    XSRETURN(1);
-</code></pre><p>最後に XSRETURN(1) として、返り値の数を報告したらすべての作業は完了となる。<h2>コンテキストを読む XS<a class="toc-anchor" href="#n17" name="n17">&dagger;</a></h2>
+</code></pre><p>最後に XSRETURN(1) として、返り値の数を報告したらすべての作業は完了となる。<h2>コンテキストを読む XS<a class="toc-anchor" href="#n13" name="n13">&dagger;</a></h2>
     <p>GIMME_V という値を参照することで、Perl における wantarray と同等のことができます。<pre><code>MODULE = Gimme          PACKAGE = Gimme
 
 void
@@ -161,7 +143,7 @@ say join(&quot;,&quot;, Gimme::gimme());
 say scalar(Gimme::gimme());
 </code></pre><p>という風にすれば、<pre><code>1,2,3
 5963
-</code></pre><p>という風に、コンテキストによりちがう値を返せていることがわかります。<h2>C の世界のポインタを扱う<a class="toc-anchor" href="#n18" name="n18">&dagger;</a></h2>
+</code></pre><p>という風に、コンテキストによりちがう値を返せていることがわかります。<h2>C の世界のポインタを扱う<a class="toc-anchor" href="#n14" name="n14">&dagger;</a></h2>
     <p>たとえば以下のような「点」をあつかうライブラリがあったとしましょう。<pre><code>typedef struct {
     int x;
     int y;
@@ -261,31 +243,45 @@ PPCODE:
 </code></pre><p>C の API をよんで、ポインタをえました。<pre><code>    SV *sv = newSViv(PTR2IV(point));
 </code></pre><p>ポインタを <code>IV PTR2IV(void*)</code> のマクロで、IV 型に変換します。そして <code>SV* newSViv(IV)</code> で SV 型に変換。<pre><code>    sv = newRV_noinc(sv);
 </code></pre><p>これで、リファレンスにしています。ここまでで、<code>\do { my $ptr = 0xdeadfhbeef }</code> ってやったときの状態になっているわけですね。<pre><code>    sv_bless(sv, gv_stachpv(klass, 1));
-</code></pre><p>さらに、ここから bless します。<code>bless \do { my $ptr = 0xdeadfhbeef }, &quot;Point&quot;</code> とした状態になったわけです。gv_stashpv というのは stash ってやつをとりだす関数です。あまり深くかんがえなくていいです。<h3>動作確認<a class="toc-anchor" href="#n19" name="n19">&dagger;</a></h3>
+</code></pre><p>さらに、ここから bless します。<code>bless \do { my $ptr = 0xdeadfhbeef }, &quot;Point&quot;</code> とした状態になったわけです。gv_stashpv というのは stash ってやつをとりだす関数です。あまり深くかんがえなくていいです。<h3>動作確認<a class="toc-anchor" href="#n15" name="n15">&dagger;</a></h3>
     <p>以下のようにして動作確認ができます。<pre><code>use Point;
 my $p = Point-&gt;new(5,9);
 say $p-&gt;x; # =&gt; 5
 say $p-&gt;y; # =&gt; 9
-</code></pre><h2>基本的な Perl API<a class="toc-anchor" href="#n20" name="n20">&dagger;</a></h2>
-    <p>以下に基本的な Perl API について説明します。ベーシックな操作は網羅しているつもりですが、「これがあったほうがいいのでは?」という意見があれば github issues にておしらせください。<p>高速化のためにつかえるものや、2つの関数の組み合わせで可能な処理などについてはここには記述していません。<h3>SV の操作<a class="toc-anchor" href="#n21" name="n21">&dagger;</a></h3>
+</code></pre><h2>基本的な Perl API<a class="toc-anchor" href="#n16" name="n16">&dagger;</a></h2>
+    <p>以下に基本的な Perl API について説明します。ベーシックな操作は網羅しているつもりですが、「これがあったほうがいいのでは?」という意見があれば github issues にておしらせください。<p>高速化のためにつかえるものや、2つの関数の組み合わせで可能な処理などについてはここには記述していません。<h3>SV の操作<a class="toc-anchor" href="#n17" name="n17">&dagger;</a></h3>
     <h4>SV の中身をダンプしたい</h4><pre><code>use Devel::Peek;
 Dump($sv);
 </code></pre><p>みたいなのを XS の世界ではどうやるのでしょうか?<pre><code>sv_dump(sv)
-</code></pre><p>SV の中身をダンプして出力します。Devel::Peek::Dump とおなじです。 デバッグ時にはやたらとつかいます。<h4>新しい SV をつくりたい</h4><pre><code>SV* new_sv = newSVsv(sv);
-</code></pre><p>SVをコピーして新しいSVを作ります。XSの世界ではPerlの世界とちがって代入や配列への保存時にコピーが発生しないので、必要なときにきちんとコピーをしないとバグのもとになります。たとえば、XSUBの引数をオブジェクトに保存するときは<code>newSVsv</code>などでコピーすべきです。<h4>参照カウンターをインクリメントしたい</h4><pre><code>SvREFCNT_inc(sv);
+</code></pre><p>SV の中身をダンプして出力します。Devel::Peek::Dump とおなじです。 デバッグ時にはやたらとつかいます。<h4>新しい SV をつくりたい</h4>
+    <h5>整数値から SV をつくりたい</h5><pre><code>SV* sv = newSViv(5963);
+</code></pre><p>簡単ですね。<h5>符号なし整数値から SV をつくりたい</h5><pre><code>SV* sv = newSVuv(5963);
+</code></pre><p>簡単ですね。<h5>文字列から SV をつくりたい</h5><pre><code>SV* sv = newSVpvn(&quot;hello&quot;, strlen(&quot;hello&quot;));
+</code></pre><p>簡単ですね。<p>ここで、<code>newSVpv</code> という API もあるのですが、これは文字列の長さに 0 をあたえると strlen がよばれるという余計なお世話的機能がついていて、バグの元になりやすいので、newSVpvn をつかうようにするのがオススメです。<h5>SV から SV をつくりたい</h5><pre><code>SV* new_sv = newSVsv(sv);
+</code></pre><p>SVをコピーして新しいSVを作ります。XSの世界ではPerlの世界とちがって代入や配列への保存時にコピーが発生しないので、必要なときにきちんとコピーをしないとバグのもとになります。たとえば、XSUBの引数をオブジェクトに保存するときは<code>newSVsv</code>などでコピーすべきです。<h4>SV の値が真か偽かがしりたい</h4><pre><code>bool b = SvTRUE(sv);
+</code></pre><p>SvTRUE でわかります。<h4>sprintf したい</h4><pre><code>SV* sv = newSVpvf(&quot;%d&quot;, 3);
+</code></pre><p>newSVpvf でできます。<h4>参照カウンターをインクリメントしたい</h4><pre><code>SvREFCNT_inc(sv);
 </code></pre><p>SV のリファレンスカウントをインクリメントします。<h4>参照カウンターをデクリメントしたい</h4><pre><code>SvREFCNT_dec(sv);
 </code></pre><p>SV のリファレンスカウントをインクリメントします。<h4>SV 構造体から整数値(IV)をとりだしたい</h4><pre><code>IV iv = SvIV(sv);
 </code></pre><p>SV 構造体から IV をとりだします。IV がふくまれていない SV だった場合には、自動的に変換がはしります。<h4>SV 構造体から浮動小数点値(NV)をとりだしたい</h4><pre><code>NV nv = SvNV(sv);
-</code></pre><p>SV 構造体から IV をとりだします。IV がふくまれていない SV だった場合には、自動的に変換がはしります。<h4><code>char* ptr = SvPV_nolen(SV* sv)</code></h4>
-    <p>SV から文字列をとりだします。<h4><code>char* ptr = SvPV(SV* sv, STRLEN len)</code></h4>
-    <p>これは曲者。SV から文字列をとりだしつつ、長さの情報もえます。マクロでやってるので奇妙なかんじになってしまっている。<pre><code>STRLEN len;
+</code></pre><p>SV 構造体から IV をとりだします。IV がふくまれていない SV だった場合には、自動的に変換がはしります。<h4>SV 構造体から文字列をとりだしたい</h4><pre><code>char* ptr = SvPV_nolen(SV* sv);
+</code></pre><p>SV から文字列をとりだします。<p>文字列長さも必要なときは <code>SvPV()</code> をつかえばいいのですが、<pre><code>STRLEN len;
 char* ptr = SvPV(sv, len);
-</code></pre><p>という風にやると、len のところにしれっと長さ情報がかきこまれます。<h4>bless したいのですが</h4><pre><code>bless $ref, &#39;Class&#39;;
+</code></pre><p>これは曲者。SV から文字列をとりだしつつ、長さの情報もえます。マクロでやってるので奇妙なかんじになってしまっている。 len のところにしれっと長さ情報がかきこまれます。<h4>文字列が UTF-8 フラッグをもっているかどうかを知りたい</h4><pre><code>I32 is_utf8 = SvUTF8(sv);
+</code></pre><p>文字列が UTF-8 フラッグをもっているかは <code>SvUTF8()</code> でしらべられます。<h4>デリファレンスしたい</h4><pre><code>if (SvROK(ref)) {
+    SV *sv = SvRV(ref);
+    sv_dump(sv);
+}
+</code></pre><p><code>SvRV</code> で、リファレンスの先をとりだすことができます。<p>ここで注意すべきは、<code>SvRV</code> をする前には <code>SvROK</code> でデリファレンス可能かどうかをチェックしておく必要があるってコト。 リファレンスじゃないものを SvRV すると一発で SEGV なので注意して!SvROK をよばないで<h4>bless したいのですが</h4><pre><code>bless $ref, &#39;Class&#39;;
 </code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>ref = sv_bless(ref, gv_stash_pv(&quot;Class::Name&quot;, 1));
-</code></pre><p>とすればいいです。ここで ref はリファレンスがはいった <code>SV*</code> で、<code>Class::Name</code> はクラス名です。<h3>配列の操作<a class="toc-anchor" href="#n22" name="n22">&dagger;</a></h3>
+</code></pre><p>とすればいいです。ここで ref はリファレンスがはいった <code>SV*</code> で、<code>Class::Name</code> はクラス名です。<h4>UNIVERSAL::isa したいのですが</h4><pre><code>if (sv_isobject(sv) &amp;&amp; sv_derived_from(sv, class)) { ... }
+</code></pre><p>あるオブジェクトがあるクラスからの派生であるかを見るには、<code>sv_derived_from</code> をつかいます。 <code>sv_isobject</code> で先に、そもそもオブジェクトなのかは確認しておきましょう。<h4>ポインタを SV にうめたいのですが</h4><pre><code>SV* sv = newSViv(PTR2IV(ptr));
+</code></pre><p>としてください。逆向きにやるには<pre><code>void* ptr = INT2PTR(SvIV(sv));
+</code></pre><p>とします。<h3>配列の操作<a class="toc-anchor" href="#n18" name="n18">&dagger;</a></h3>
     <h4>配列をつくりたい</h4><pre><code>my @av;
 </code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>AV* av = newAV();
-</code></pre><p>配列をつくります。できあがった変数のリファレンスカウントはもちろん1です。<h4>配列に値を push したい</h4><pre><code>push @a, $sv;
+</code></pre><p>配列をつくります。できあがった変数のリファレンスカウントはもちろん1です。<h4>配列の大きさを知りたい</h4><pre><code>I32 len = av_len(av) + 1;
+</code></pre><p>歴史的事情により、1ひいた値がかえってくるので注意。自分で1をたしてあげましょう。<h4>配列に値を push したい</h4><pre><code>push @a, $sv;
 </code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>av_push(av, newSVsv(sv));
 </code></pre><p>配列に要素を push します。<p><code>av_push</code> にかぎらず、配列やハッシュに保存するAPIはSVのコピーを行いませんので自分でコピーします。パフォーマンスのためにコピーを省略したい場合は、SvREFCNT_inc でリファレンスカウントを増やしてください。<h4>配列を pop したい</h4><pre><code>$sv = pop @a;
 </code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>SV* sv = av_pop(av);
@@ -303,26 +299,47 @@ SV * sv = *sv;
 $av[$key] = $sv;
 </code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>I32 key = 59;
 sv_setsv(*av_fetch(av, key, TRUE), sv);
-</code></pre><p><code>av_store</code> を使うこともできますが、<code>av_store</code>には癖があるので<code>av_fetch</code>の第三引数lvalueをtrueにし、それに対して<code>sv_setsv</code>で代入するのがよいです。代入したい値がIVやNVなら、<code>sv_setsv</code>のかわりに<code>sv_setiv</code>や<code>sv_setnv</code>を使ってもかまいません。<p>使い方がややこしいので <code>av_push</code> や <code>av_unshift</code> ですませられるときは、そちらをつかっといた方が楽です。<h3>HV<a class="toc-anchor" href="#n23" name="n23">&dagger;</a></h3>
+</code></pre><p><code>av_store</code> を使うこともできますが、<code>av_store</code>には癖があるので<code>av_fetch</code>の第三引数lvalueをtrueにし、それに対して<code>sv_setsv</code>で代入するのがよいです。代入したい値がIVやNVなら、<code>sv_setsv</code>のかわりに<code>sv_setiv</code>や<code>sv_setnv</code>を使ってもかまいません。<p>使い方がややこしいので <code>av_push</code> や <code>av_unshift</code> ですませられるときは、そちらをつかっといた方が楽です。<h3>HV<a class="toc-anchor" href="#n19" name="n19">&dagger;</a></h3>
     <h4>ハッシュを宣言する</h4><pre><code>my %hash;
 </code></pre><p>新しい Hash をつくるには <code>newHV()</code> をよびます。<pre><code>HV* = newHV();
-</code></pre><p>この HV の参照カウントは1です。<h3>RV<a class="toc-anchor" href="#n24" name="n24">&dagger;</a></h3>
-    <h3>グローバル変数<a class="toc-anchor" href="#n25" name="n25">&dagger;</a></h3>
+</code></pre><p>この HV の参照カウントは1です。<h4>ハッシュに値を格納する</h4><pre><code>$hv{key} = $sv;
+</code></pre><p>は以下のようにかけます。<pre><code>hv_store(hv, &quot;key&quot;, strlen(&quot;key&quot;), sv, 0);
+</code></pre><p>最後の 0 の部分は、ハッシュ値を自分で計算している場合にわたせるよ、という意味なのですが、通常は0をわたすとおぼえておいて問題ないです。<h4>ハッシュから値をとりだす</h4><pre><code>my $sv = $hv{key};
+</code></pre><p>は以下のようにかけます。<pre><code>SV **ssv = hv_fetch(hv, &quot;key&quot;, strlen(&quot;key&quot;), 0);
+if (ssv) {
+    SV*sv = *ssv;
+}
+</code></pre><p>最後の 0 は、lvalue としてつかえる値をかえすかどうか、です。通常は0を指定してください。<h4>ハッシュに値がはいっているかどうかを確認する</h4><pre><code>exists $hv{key};
+</code></pre><p>は以下のようにかけます。<pre><code>bool ok = hv_exists(hv, key, strlen(key));
+</code></pre><p>簡単ですね。<h4>ハッシュから値をけす</h4><pre><code>delete $hv{key};
+</code></pre><p>は以下のようにかけます。<pre><code>hv_delete(hv, key, strlen(key), 0);
+</code></pre><h3>RV<a class="toc-anchor" href="#n20" name="n20">&dagger;</a></h3>
+    <h4>リファレンスをつくる</h4><pre><code>SV* ref = newRV_noinc(sv);
+</code></pre><p>リファレンスをつくります。<h3>グローバル変数<a class="toc-anchor" href="#n21" name="n21">&dagger;</a></h3>
     <h4><code>$Package::Name::Var</code> をとりだしたい</h4><pre><code>SV * sv = get_sv(&quot;Package::Name::Var&quot;, GV_ADD);
 </code></pre><p><code>$Package::Variable</code> みたいなグローバル変数をとりだします。<p>第二引数には <code>GV_ADD</code> をわたせばなかったときには作成されます。0 をわたしたら、なかったときには NULL がかえります。 通常は <code>GV_ADD</code> わたしとく使い方がメインだとおもいます。<h4><code>@Package::Name::Var</code> をとりだしたい</h4><pre><code>AV* av = get_av(&quot;Package::Name::Var&quot;, GV_ADD);
-</code></pre><p><code>@Package::Variable</code> みたいなグローバル変数をとりだします。<p>flags には <code>GV_ADD</code> をわたせばなかったときには作成されます。0 をわたしたら、なかったときには NULL がかえります。<h2>さらに上をめざす<a class="toc-anchor" href="#n26" name="n26">&dagger;</a></h2>
-    <p>本稿に書かれている範囲よりもさらに深く知りたいという方は以下のようなページを見てください。<h3><a href="http://perldoc.perl.org/perlxstut.html">perlxstut</a><a class="toc-anchor" href="#n27" name="n27">&dagger;</a></h3>
-    <p>XS のチュートリアルドキュメントです。<h3><a href="http://perldoc.perl.org/perlapi.html">perlapi</a><a class="toc-anchor" href="#n28" name="n28">&dagger;</a></h3>
-    <p>Perl の外部向け API が網羅されています。<h3><a href="http://perldoc.perl.org/perlguts.html">perlguts</a><a class="toc-anchor" href="#n29" name="n29">&dagger;</a></h3>
-    <p>Perl の内部のことが解説されてます。<h3><a href="http://perldoc.perl.org/perlclib.html">perlclib</a><a class="toc-anchor" href="#n30" name="n30">&dagger;</a></h3>
-    <p>C標準ライブラリを使用する際の、注意点(主に代替すべき API)について記載されています。<h3><a href="http://cpansearch.perl.org/src/RURBAN/illguts-0.44/index.html">illguts</a><a class="toc-anchor" href="#n31" name="n31">&dagger;</a></h3>
-    <p>Perl の内部構造を画像まじりで解説してくれるページです。<h2>(コラム) C99 と XS<a class="toc-anchor" href="#n32" name="n32">&dagger;</a></h2>
+</code></pre><p><code>@Package::Variable</code> みたいなグローバル変数をとりだします。<p>flags には <code>GV_ADD</code> をわたせばなかったときには作成されます。0 をわたしたら、なかったときには NULL がかえります。<h2>さらに上をめざす<a class="toc-anchor" href="#n22" name="n22">&dagger;</a></h2>
+    <p>本稿に書かれている範囲よりもさらに深く知りたいという方は以下のようなページを見てください。<h3><a href="http://perldoc.perl.org/perlxstut.html">perlxstut</a><a class="toc-anchor" href="#n23" name="n23">&dagger;</a></h3>
+    <p>XS のチュートリアルドキュメントです。<h3><a href="http://perldoc.perl.org/perlxs.html">perlxs</a><a class="toc-anchor" href="#n24" name="n24">&dagger;</a></h3>
+    <p>XS のリファレンスドキュメントです。本ドキュメントではだいぶはしょってる部分があるので、他のライブラリでのつかいかたを知るためにはこれを読む必要があるかもしれません。<h3><a href="http://perldoc.perl.org/perlapi.html">perlapi</a><a class="toc-anchor" href="#n25" name="n25">&dagger;</a></h3>
+    <p>Perl の外部向け API が網羅されています。<h3><a href="http://perldoc.perl.org/perlguts.html">perlguts</a><a class="toc-anchor" href="#n26" name="n26">&dagger;</a></h3>
+    <p>Perl の内部のことが解説されてます。<h3><a href="http://perldoc.perl.org/perlclib.html">perlclib</a><a class="toc-anchor" href="#n27" name="n27">&dagger;</a></h3>
+    <p>C標準ライブラリを使用する際の、注意点(主に代替すべき API)について記載されています。<h3><a href="http://cpansearch.perl.org/src/RURBAN/illguts-0.44/index.html">illguts</a><a class="toc-anchor" href="#n28" name="n28">&dagger;</a></h3>
+    <p>Perl の内部構造を画像まじりで解説してくれるページです。<h2>その他の話題<a class="toc-anchor" href="#n29" name="n29">&dagger;</a></h2>
+    <p>本編では触れなかった、ニッチというかエッジというか、そういう話題についてふれます。<h3>C99 と XS<a class="toc-anchor" href="#n30" name="n30">&dagger;</a></h3>
     <p>Visual Studio では C99 がサポートされていないので、C99 スタイルで書いてあるモジュールを CPAN にあげていると、バグレポートがくるので注意が必要です。<p>対応策は以下の3つのうちのいずれかです。<ul>
       <li>C89 スタイルになおす<li>Visual Studio を無視する<li>C++ としてアップする</ul>
-    <p>XS モジュールを Windows でうごくようにがんばっても、そもそも OS の問題や Perl の Windows 対応の問題などで問題がおきて面倒なことになるだけだったりするので、Visual Studio のときは Makefile.PL で N/A にしてしまってもよいかな、と最近は考えています(重要なモジュールはのぞく)。<h2>まとめ<a class="toc-anchor" href="#n33" name="n33">&dagger;</a></h2>
-    <p>本稿は、いかがでしたでしょうか。XS を「書く」ことについての基本的な知識はついたのではないかとおもいます。<p>XS でいろいろかいて CPAN にジャンジャンとアップしましょう。<p>質問、ご要望は github issues にてうけつけていますので、お気軽にどうぞ。<h2>Future Plan<a class="toc-anchor" href="#n34" name="n34">&dagger;</a></h2>
+    <p>XS モジュールを Windows でうごくようにがんばっても、そもそも OS の問題や Perl の Windows 対応の問題などで問題がおきて面倒なことになるだけだったりするので、Visual Studio のときは Makefile.PL で N/A にしてしまってもよいかな、と最近は考えています(重要なモジュールはのぞく)。<h3>ppport.h<a class="toc-anchor" href="#n31" name="n31">&dagger;</a></h3>
+    <p>XS のモジュールにはだいたい ppport.h というファイルがふくまれている。これはいったいなんなのだろうか。<p>これは Devel::PPPort というモジュールが生成するヘッダだ。Perl5 に API が新規に追加された際に ppport.h が、互換性の問題を吸収してくれる。<p>Minilla をつかっていれば、ppport.h は自動的によみこまれるので通常は気にする必要はないのだが、そういうモノなのだ、ということだけ認識しておくとよいと思う。<p>なお、ppport.h は以下のコマンドで再生成できる。<pre><code>perl -MDevel::PPPort -e &#39;Devel::PPPort::WriteFile()&#39;
+</code></pre><h3>Minilla で XS を書く<a class="toc-anchor" href="#n32" name="n32">&dagger;</a></h3>
+    <p>Minilla で XS を書くには<pre><code>minli new -p XS My::XS::Module
+</code></pre><p>とすれば、それっぽいスケルトンができあがります。<h3>typemap<a class="toc-anchor" href="#n33" name="n33">&dagger;</a></h3>
+    <p>typemap というファイルが XS モジュールのドキュメントにはいっていることがあります。これは XS の機能のひとつで、引数や返り値の型の変換を typemap という DSL で書くことにより自動的に行ってしまおう、という野心的なやつです。<p>初心者の人はとくに知る必要はないのですが、おおきなライブラリをつくるときには知りたくなるかもしれません。<p>具体的には <code>perldoc perlxs</code> をみてください。<h2>まとめ<a class="toc-anchor" href="#n34" name="n34">&dagger;</a></h2>
+    <p>本稿は、いかがでしたでしょうか。XS を「書く」ことについての基本的な知識はついたのではないかとおもいます。<p>XS でいろいろかいて CPAN にジャンジャンとアップしましょう。<p>質問、ご要望は github issues にてうけつけていますので、お気軽にどうぞ。<h2>Contributors<a class="toc-anchor" href="#n35" name="n35">&dagger;</a></h2>
+    <h3>監修<a class="toc-anchor" href="#n36" name="n36">&dagger;</a></h3>
+    <p>tokuhirom<h3>Contributors<a class="toc-anchor" href="#n37" name="n37">&dagger;</a></h3>
     <ul>
-      <li>構造体を隠蔽する方法</ul>
+      <li>gfx<li>Cside</ul>
   
 
             </div>
