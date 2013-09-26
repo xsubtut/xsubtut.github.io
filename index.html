@@ -59,7 +59,7 @@
     <p>RV is-a SV の関係です。Reference Value の略です。<h2>リファレンスカウント<a class="toc-anchor" href="#n12" name="n12">&dagger;</a></h2>
     <p>Perl5 におけるメモリの管理はリファレンスカウントという方式でおこなわれています。これはつまり、変数ごとに「この変数は○箇所から参照されているョ」というマークをつけておき、どこからも参照されなくなったらその部分のメモリを再利用するというだけの仕組みです。<p>リファレンスカウンタ方式のメモリ管理では、このリファレンスカウンターの操作を、拡張モジュールの作者が気をつけておこなわなければなりません。<p>一方で、メモリの増減などが予測しやすい、デバッグがしやすいというメリットもあります。<p>各 Perl API の、どのタイミングでリファレンスカウントが増減するのかを把握することが、拡張モジュールを書く上での第一歩だといえます。<h3>mortal な SV<a class="toc-anchor" href="#n13" name="n13">&dagger;</a></h3>
     <p>参照カウントで一番問題になるのは、今自分がもっている参照カウントをどうやって手放すか、ということです。 今てばなしたら0になってしまってSVが開放されてしまうし、手放さなければメモリリーク。どうしたものか!<p>ということで、Perl5 の世界では「このスコープをぬけたらこれ開放しておいてね!」と Perl5 本体にいっておくことができるようになっています。この「あとで開放しておいてね!」といっておくことを「mortal 状態にする」といいます。<p>コードで、SV を mortal にするには、<code>sv_2mortal(sv)</code> とします。<code>sv_2mortal</code> の返り値は、引数にわたした <code>SV*</code> です。<p><code>sv_2mortal</code> は、やたらめったらつかうところが多いので、XS の世界にはさまざまなショートカットが用意されています。たとえば <code>XPUSHs(sv_2mortal(sv))</code> を <code>mXPUSHs(sv)</code> などという風に省略して書けるのです。これは便利なのですが、おぼえることがふえてしまうので本稿ではこういった省略記法はふれないです。<p>(なお、iPhone/OSX のアプリケーションを開発していらっしゃる方なら autorelease みたいなものだと考えればわかりやすいです! っていうと最近はよかったのですが、最近は autorelease って時代遅れなかんじがするのでこの比喩ももはやつかえません。)<h2>なにはなくとも Hello, world!<a class="toc-anchor" href="#n14" name="n14">&dagger;</a></h2>
-    <p>前提知識の羅列が続く文章ほどダルいものもないので、実際のコードを見たい、とおもっている方も多かろう。まずは、もっともシンプルなケースを見ていこう。以下は、標準出力に &quot;Hello, world!&quot; という文字列を表示するだけの簡単なコードだ。<p>今回のコードは (TODO) で見ることができる。<h3>はじめての XS<a class="toc-anchor" href="#n15" name="n15">&dagger;</a></h3>
+    <p>前提知識の羅列が続く文章ほどダルいものもないので、実際のコードを見たい、とおもっている方も多かろう。まずは、もっともシンプルなケースを見ていこう。以下は、標準出力に &quot;Hello, world!&quot; という文字列を表示するだけの簡単なコードだ。<p>今回のコードはすべて<a href="https://github.com/xsubtut/xsubtut.github.io/tree/master/examples">github</a> で見ることができる。<h3>はじめての XS<a class="toc-anchor" href="#n15" name="n15">&dagger;</a></h3>
     <p>以下が今回よむ XS コードの全貌である。XS で書かれたコードはなんとも珍妙な見た目をしているが、慣れてしまえばどうということはない。美人は三日で飽きるがブスは三日で慣れるというではないか。<pre><code>#define PERL_NO_GET_CONTEXT
 #include &quot;EXTERN.h&quot;
 #include &quot;perl.h&quot;
@@ -269,7 +269,8 @@ char* ptr = SvPV(sv, len);
 </code></pre><p>とすればいいです。ここで ref はリファレンスがはいった <code>SV*</code> で、<code>Class::Name</code> はクラス名です。<h3>配列の操作<a class="toc-anchor" href="#n23" name="n23">&dagger;</a></h3>
     <h4>配列をつくりたい</h4><pre><code>my @av;
 </code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>AV* av = newAV();
-</code></pre><p>配列をつくります。できあがった変数のリファレンスカウントはもちろん1です。<h4>配列に値を push したい</h4><pre><code>push @a, $sv;
+</code></pre><p>配列をつくります。できあがった変数のリファレンスカウントはもちろん1です。<h4>配列の大きさを知りたい</h4><pre><code>I32 len = av_len(av) + 1;
+</code></pre><p>歴史的事情により、1ひいた値がかえってくるので注意。自分で1をたしてあげましょう。<h4>配列に値を push したい</h4><pre><code>push @a, $sv;
 </code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>av_push(av, newSVsv(sv));
 </code></pre><p>配列に要素を push します。<p><code>av_push</code> にかぎらず、配列やハッシュに保存するAPIはSVのコピーを行いませんので自分でコピーします。パフォーマンスのためにコピーを省略したい場合は、SvREFCNT_inc でリファレンスカウントを増やしてください。<h4>配列を pop したい</h4><pre><code>$sv = pop @a;
 </code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>SV* sv = av_pop(av);
