@@ -272,7 +272,8 @@ char* ptr = SvPV(sv, len);
 }
 </code></pre><p><code>SvRV</code> で、リファレンスの先をとりだすことができます。<p>ここで注意すべきは、<code>SvRV</code> をする前には <code>SvROK</code> でデリファレンス可能かどうかをチェックしておく必要があるってコト。 リファレンスじゃないものを SvRV すると一発で SEGV なので注意して!SvROK をよばないで<h4>bless したいのですが</h4><pre><code>bless $ref, &#39;Class&#39;;
 </code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>ref = sv_bless(ref, gv_stash_pv(&quot;Class::Name&quot;, 1));
-</code></pre><p>とすればいいです。ここで ref はリファレンスがはいった <code>SV*</code> で、<code>Class::Name</code> はクラス名です。<h3>配列の操作<a class="toc-anchor" href="#n23" name="n23">&dagger;</a></h3>
+</code></pre><p>とすればいいです。ここで ref はリファレンスがはいった <code>SV*</code> で、<code>Class::Name</code> はクラス名です。<h4>UNIVERSAL::isa したいのですが</h4><pre><code>if (sv_isobject(sv) &amp;&amp; sv_derived_from(sv, class)) { ... }
+</code></pre><p>あるオブジェクトがあるクラスからの派生であるかを見るには、<code>sv_derived_from</code> をつかいます。 <code>sv_isobject</code> で先に、そもそもオブジェクトなのかは確認しておきましょう。<h3>配列の操作<a class="toc-anchor" href="#n23" name="n23">&dagger;</a></h3>
     <h4>配列をつくりたい</h4><pre><code>my @av;
 </code></pre><p>みたいなのをやるにはどうしたらいいのでしょうか。<pre><code>AV* av = newAV();
 </code></pre><p>配列をつくります。できあがった変数のリファレンスカウントはもちろん1です。<h4>配列の大きさを知りたい</h4><pre><code>I32 len = av_len(av) + 1;
@@ -297,8 +298,20 @@ sv_setsv(*av_fetch(av, key, TRUE), sv);
 </code></pre><p><code>av_store</code> を使うこともできますが、<code>av_store</code>には癖があるので<code>av_fetch</code>の第三引数lvalueをtrueにし、それに対して<code>sv_setsv</code>で代入するのがよいです。代入したい値がIVやNVなら、<code>sv_setsv</code>のかわりに<code>sv_setiv</code>や<code>sv_setnv</code>を使ってもかまいません。<p>使い方がややこしいので <code>av_push</code> や <code>av_unshift</code> ですませられるときは、そちらをつかっといた方が楽です。<h3>HV<a class="toc-anchor" href="#n24" name="n24">&dagger;</a></h3>
     <h4>ハッシュを宣言する</h4><pre><code>my %hash;
 </code></pre><p>新しい Hash をつくるには <code>newHV()</code> をよびます。<pre><code>HV* = newHV();
-</code></pre><p>この HV の参照カウントは1です。<h3>RV<a class="toc-anchor" href="#n25" name="n25">&dagger;</a></h3>
-    <h3>グローバル変数<a class="toc-anchor" href="#n26" name="n26">&dagger;</a></h3>
+</code></pre><p>この HV の参照カウントは1です。<h4>ハッシュに値を格納する</h4><pre><code>$hv{key} = $sv;
+</code></pre><p>は以下のようにかけます。<pre><code>hv_store(hv, &quot;key&quot;, strlen(&quot;key&quot;), sv, 0);
+</code></pre><p>最後の 0 の部分は、ハッシュ値を自分で計算している場合にわたせるよ、という意味なのですが、通常は0をわたすとおぼえておいて問題ないです。<h4>ハッシュから値をとりだす</h4><pre><code>my $sv = $hv{key};
+</code></pre><p>は以下のようにかけます。<pre><code>SV **ssv = hv_fetch(hv, &quot;key&quot;, strlen(&quot;key&quot;), 0);
+if (ssv) {
+    SV*sv = *ssv;
+}
+</code></pre><p>最後の 0 は、lvalue としてつかえる値をかえすかどうか、です。通常は0を指定してください。<h4>ハッシュに値がはいっているかどうかを確認する</h4><pre><code>exists $hv{key};
+</code></pre><p>は以下のようにかけます。<pre><code>bool ok = hv_exists(hv, key, strlen(key));
+</code></pre><p>簡単ですね。<h4>ハッシュから値をけす</h4><pre><code>delete $hv{key};
+</code></pre><p>は以下のようにかけます。<pre><code>hv_delete(hv, key, strlen(key), 0);
+</code></pre><h3>RV<a class="toc-anchor" href="#n25" name="n25">&dagger;</a></h3>
+    <h4>リファレンスをつくる</h4><pre><code>SV* ref = newRV_noinc(sv);
+</code></pre><p>リファレンスをつくります。<h3>グローバル変数<a class="toc-anchor" href="#n26" name="n26">&dagger;</a></h3>
     <h4><code>$Package::Name::Var</code> をとりだしたい</h4><pre><code>SV * sv = get_sv(&quot;Package::Name::Var&quot;, GV_ADD);
 </code></pre><p><code>$Package::Variable</code> みたいなグローバル変数をとりだします。<p>第二引数には <code>GV_ADD</code> をわたせばなかったときには作成されます。0 をわたしたら、なかったときには NULL がかえります。 通常は <code>GV_ADD</code> わたしとく使い方がメインだとおもいます。<h4><code>@Package::Name::Var</code> をとりだしたい</h4><pre><code>AV* av = get_av(&quot;Package::Name::Var&quot;, GV_ADD);
 </code></pre><p><code>@Package::Variable</code> みたいなグローバル変数をとりだします。<p>flags には <code>GV_ADD</code> をわたせばなかったときには作成されます。0 をわたしたら、なかったときには NULL がかえります。<h2>さらに上をめざす<a class="toc-anchor" href="#n27" name="n27">&dagger;</a></h2>
