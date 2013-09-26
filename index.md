@@ -22,16 +22,32 @@ XS は本当にいろいろできて便利なのですが、いざこったこ�
 
 Perl の内部データは構造体におさまっています。そのあたりを把握していきましょう。
 
+### SV
+
+Perl のすべての値は SV から派生しています。SV は Scalar Value のことです。
+
 継承関係にあるものは親にキャストが可能です。たとえば、`AV*` は `SV*` にキャストできます。
 
 <a href="http://cpansearch.perl.org/src/RURBAN/illguts-0.44/svtypes-14.png"><img src="http://cpansearch.perl.org/src/RURBAN/illguts-0.44/svtypes-14.png"></a>
 (画像は [illguts](http://search.cpan.org/dist/illguts/) より)
 
-### SV
+#### AV
 
-Perl のすべての値は SV から派生しています。SV は Scalar Value のことです。
+AV is-a SV の関係です。配列データがはいっています。SV にキャストしてつかうことができます。
 
-### IV
+#### HV
+
+HV is-a SV の関係です。ハッシュです。SV にキャストしてつかうことができます。
+
+#### RV
+
+RV is-a SV の関係です。Reference Value の略です。
+
+### Perl のプリミティブ型
+
+SV の中には整数値や文字列値などが格納できます。文字列値と整数値は同時に両方もつことができる、というのが Perl5 のかわっているところです。
+
+#### IV
 
 SV has-a IV の関係です。SV 構造体の中に IV が格納されている、とおもってください。整数値がはいっています。
 
@@ -43,30 +59,23 @@ SV has-a IV の関係です。SV 構造体の中に IV が格納されている�
 
 とすることで、IV を `SV*` に変換できます。
 
-### SvPV
+#### UV
 
-SvPV というのは PV をもつ SV のことです。SV の中に PV(Pointer Value) が格納されています。
+SV has-a UV の関係です。UV は unsigned value のことです。符号なし整数値ですね。
+普段はあまり意識してつかうこともないかとおもいます。
+
+#### NV
+
+SV has-a NV の関係です。SV 構造体の中に NV が格納されている、とおもってください。浮動小数点値がはいっています。
+
+#### PV
+
+SV の中に PV(Pointer Value) が格納されています。
 Pointer Value というのはつまり文字列のことです。
 
     char *str = SvPV_nolen(sv);
 
 とすることで、文字列をとりだすことができます。
-
-### NV
-
-SV has-a NV の関係です。SV 構造体の中に NV が格納されている、とおもってください。浮動小数点値がはいっています。
-
-### AV
-
-AV is-a SV の関係です。配列データがはいっています。SV にキャストしてつかうことができます。
-
-### HV
-
-HV is-a SV の関係です。ハッシュです。SV にキャストしてつかうことができます。
-
-### RV
-
-RV is-a SV の関係です。Reference Value の略です。
 
 ## リファレンスカウント
 
@@ -528,6 +537,16 @@ len のところにしれっと長さ情報がかきこまれます。
 
 あるオブジェクトがあるクラスからの派生であるかを見るには、`sv_derived_from` をつかいます。
 `sv_isobject` で先に、そもそもオブジェクトなのかは確認しておきましょう。
+
+#### ポインタを SV にうめたいのですが
+
+    SV* sv = newSViv(PTR2IV(ptr));
+
+としてください。逆向きにやるには
+
+    void* ptr = INT2PTR(SvIV(sv));
+
+とします。
 
 ### 配列の操作
 
