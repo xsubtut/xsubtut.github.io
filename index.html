@@ -116,9 +116,9 @@ PPCODE:
     SV *b = ST(1);
 </code></pre><p><code>ST(n)</code> はスタックにつまれた値のうち、n番目のものをとりだすというマクロ。これもどうということはない。ただ第一引数と第二引数をとりだして変数にいれただけだ。<pre><code>    IV ret = SvIV(a) + SvIV(b);
 </code></pre><p><code>SvIV(SV*)</code> は SV 構造体の中にはいっている IV (整数値)をとりだすマクロだ。さて、ここで注意が必要なのが、Perl の世界では文字列と整数がなんとなく自動的に変換されるということだ。そう。この SvIV で、SV の中身が文字列だった場合も IV (整数値)に変換されるのだ。そういうわけなので <code>Sum::sum(&quot;5963&quot;, &quot;4649&quot;)</code> のような呼出の場合でも問題なく処理はおこなわれる。<p>加算自体は普通の C レベルの加算となっていて、その結果を IV に保存している。IV は int ととかそういうものが typedef されたものだ(Configure script の設定によって IV のビット幅は変更されることに注意せよ)。<p>さて、計算がおわったので、いよいよ値を返却しよう。<pre><code>    XPUSHs(sv_2mortal(newSViv(ret)));
-</code></pre><p>ここは3つもマクロ/関数がいりまじっていてちょっとだけややこしい。まずは内側から見ていこう。<code>newSViv(IV)</code> で、該当の IV をもった SV を生成している。IV は C の世界での整数型なので、そのまま Perl の世界にもどすことはできないのだ。Perl の世界であつかえるのはただ SV 型のみであることを思いだしていただきたい。<p><code>sv_2mortal(SV*)</code> は、SV 構造体の SVs_TEMP フラッグをたてる君です。このフラッグがたっているとどうなるかというと、スコープをぬけたタイミングで、参照カウンタを1へらしてくれます。これはつまり、Objective-C でいうところの autorelease みたいなものだとおもってください。<pre><code>    XSRETURN(1);
+</code></pre><p>ここは3つもマクロ/関数がいりまじっていてちょっとだけややこしい。まずは内側から見ていこう。<code>newSViv(IV)</code> で、該当の IV をもった SV を生成している。IV は C の世界での整数型なので、そのまま Perl の世界にもどすことはできないのだ。Perl の世界であつかえるのはただ SV 型のみであることを思いだしていただきたい。<p><code>sv_2mortal(SV*)</code> は、SV 構造体の SVs_TEMP フラッグをたてる君です。このフラッグがたっているとどうなるかというと、スコープをぬけたタイミングで、参照カウンタを1へらしてくれます。これはつまり、Objective-C でいうところの autorelease みたいなものだとおもってください。 &lt;!-- (よりわかりやすい説明があるとよいとおもうので p-r 希望) --&gt;<pre><code>    XSRETURN(1);
 </code></pre><p>最後に XSRETURN(1) として、返り値の数を報告したらすべての作業は完了となる。<h2>コンテキストを読む XS<a class="toc-anchor" href="#n13" name="n13">&dagger;</a></h2>
-    <p>GIMME_V という値を参照することで、Perl における wantarray と同等のことができます。<pre><code>MODULE = Gimme          PACKAGE = Gimme
+    <p><code>GIMME_V</code> という値を参照することで、Perl における wantarray と同等のことができます。<pre><code>MODULE = Gimme          PACKAGE = Gimme
 
 void
 gimme(...)
@@ -138,7 +138,7 @@ PPCODE:
         abort();
     }
 }
-</code></pre><p>GIMME_V は G_ARRAY, G_VOID, G_SCALAR のうちいずれかを取ります。<pre><code>use Gimme;
+</code></pre><p><code>GIMME_V</code> は <code>G_ARRAY</code>, <code>G_VOID</code>, <code>G_SCALAR</code> のうちいずれかを取ります。<pre><code>use Gimme;
 say join(&quot;,&quot;, Gimme::gimme());
 say scalar(Gimme::gimme());
 </code></pre><p>という風にすれば、<pre><code>1,2,3
@@ -227,7 +227,7 @@ PPCODE:
     XSRETURN(0);
 }
 </code></pre><p>以外とかわっている点はすくないですね。<pre><code>const char *klass = SvPV_nolen(ST(0));
-</code></pre><p><code>SvPV_nolen(SV*)</code> は、SV から <code>char*</code> つまり PV をとりだすという指令です。<p>そして、本題は XS_STRUCT2OBJ と XS_STATE の2つのマクロですね。どうみても。 それではこの2つをよんでいきましょう。<pre><code>#define XS_STRUCT2OBJ(sv, class, obj) \
+</code></pre><p><code>SvPV_nolen(SV*)</code> は、SV から <code>char*</code> つまり PV をとりだすという指令です。<p>そして、本題は <code>XS_STRUCT2OBJ</code> と <code>XS_STATE</code> の2つのマクロですね。どうみても。 それではこの2つをよんでいきましょう。<pre><code>#define XS_STRUCT2OBJ(sv, class, obj) \
     sv = newSViv(PTR2IV(obj));  \
     sv = newRV_noinc(sv); \
     sv_bless(sv, gv_stashpv(class, 1)); \

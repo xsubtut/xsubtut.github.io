@@ -223,7 +223,7 @@ Hello, world の例では引数の処理や値を返す処理がなかった。�
 
 ## コンテキストを読む XS
 
-GIMME_V という値を参照することで、Perl における wantarray と同等のことができます。
+`GIMME_V` という値を参照することで、Perl における wantarray と同等のことができます。
 
 	MODULE = Gimme          PACKAGE = Gimme
 	
@@ -246,7 +246,7 @@ GIMME_V という値を参照することで、Perl における wantarray と�
         }
     }
 
-GIMME_V は G_ARRAY, G_VOID, G_SCALAR のうちいずれかを取ります。
+`GIMME_V` は `G_ARRAY`, `G_VOID`, `G_SCALAR` のうちいずれかを取ります。
 
 	use Gimme;
 	say join(",", Gimme::gimme());
@@ -355,7 +355,7 @@ GIMME_V は G_ARRAY, G_VOID, G_SCALAR のうちいずれかを取ります。
 
 `SvPV_nolen(SV*)` は、SV から `char*` つまり PV をとりだすという指令です。
 
-そして、本題は XS_STRUCT2OBJ と XS_STATE の2つのマクロですね。どうみても。
+そして、本題は `XS_STRUCT2OBJ` と `XS_STATE` の2つのマクロですね。どうみても。
 それではこの2つをよんでいきましょう。
 
     #define XS_STRUCT2OBJ(sv, class, obj) \

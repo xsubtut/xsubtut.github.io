@@ -6,7 +6,7 @@ use 5.010000;
 use autodie;
 
 use Text::Xslate qw(mark_raw);
-use Text::Markdown::Discount qw(markdown);
+use Text::Markdown::Hoedown qw(markdown);
 use HTML::TreeBuilder;
 use HTML::TreeBuilder::XPath;
 use HTML::Selector::XPath 'selector_to_xpath';
