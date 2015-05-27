@@ -235,14 +235,14 @@ PPCODE:
 </code></pre><p>4行もある! ややこしいですね。こんなのみてられないので、マクロを展開しながら考えてみましょう。<pre><code>    Point *point = Point_new(x, y);
     SV *sv = newSViv(PTR2IV(point));
     sv = newRV_noinc(sv);
-    sv_bless(sv, gv_stachpv(klass, 1));
+    sv_bless(sv, gv_stashpv(klass, 1));
     SvREADONLY_on(sv);
     XPUSHs(sv_2mortal(sv));
     XSRETURN(1);
 </code></pre><p>はい。わかりやすくなりました! よね?<p>ではあらためて一行ずつよんでいきましょう。<pre><code>    Point *point = Point_new(x, y);
 </code></pre><p>C の API をよんで、ポインタをえました。<pre><code>    SV *sv = newSViv(PTR2IV(point));
 </code></pre><p>ポインタを <code>IV PTR2IV(void*)</code> のマクロで、IV 型に変換します。そして <code>SV* newSViv(IV)</code> で SV 型に変換。<pre><code>    sv = newRV_noinc(sv);
-</code></pre><p>これで、リファレンスにしています。ここまでで、<code>\do { my $ptr = 0xdeadfhbeef }</code> ってやったときの状態になっているわけですね。<pre><code>    sv_bless(sv, gv_stachpv(klass, 1));
+</code></pre><p>これで、リファレンスにしています。ここまでで、<code>\do { my $ptr = 0xdeadfhbeef }</code> ってやったときの状態になっているわけですね。<pre><code>    sv_bless(sv, gv_stashpv(klass, 1));
 </code></pre><p>さらに、ここから bless します。<code>bless \do { my $ptr = 0xdeadfhbeef }, &quot;Point&quot;</code> とした状態になったわけです。gv_stashpv というのは stash ってやつをとりだす関数です。あまり深くかんがえなくていいです。<h3>動作確認<a class="toc-anchor" href="#n15" name="n15">&dagger;</a></h3>
     <p>以下のようにして動作確認ができます。<pre><code>use Point;
 my $p = Point-&gt;new(5,9);
