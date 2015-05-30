@@ -369,7 +369,7 @@ Hello, world の例では引数の処理や値を返す処理がなかった。�
         Point *point = Point_new(x, y);
         SV *sv = newSViv(PTR2IV(point));
         sv = newRV_noinc(sv);
-        sv_bless(sv, gv_stachpv(klass, 1));
+        sv_bless(sv, gv_stashpv(klass, 1));
         SvREADONLY_on(sv);
         XPUSHs(sv_2mortal(sv));
         XSRETURN(1);
@@ -390,7 +390,7 @@ C の API をよんで、ポインタをえました。
 
 これで、リファレンスにしています。ここまでで、`\do { my $ptr = 0xdeadfhbeef }` ってやったときの状態になっているわけですね。
 
-        sv_bless(sv, gv_stachpv(klass, 1));
+        sv_bless(sv, gv_stashpv(klass, 1));
 
 さらに、ここから bless します。`bless \do { my $ptr = 0xdeadfhbeef }, "Point"` とした状態になったわけです。gv_stashpv というのは stash ってやつをとりだす関数です。あまり深くかんがえなくていいです。
 
