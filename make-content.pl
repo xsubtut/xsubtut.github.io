@@ -10,6 +10,7 @@ use Text::Markdown::Hoedown qw(markdown);
 use HTML::TreeBuilder;
 use HTML::TreeBuilder::XPath;
 use HTML::Selector::XPath 'selector_to_xpath';
+use HTML::Element;
 
 my $src = slurp('template.html');
 my $xslate = Text::Xslate->new();
