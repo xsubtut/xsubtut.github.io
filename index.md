@@ -28,8 +28,9 @@ Perl のすべての値は SV から派生しています。SV は Scalar Value 
 
 継承関係にあるものは親にキャストが可能です。たとえば、`AV*` は `SV*` にキャストできます。
 
-<a href="http://cpansearch.perl.org/src/RURBAN/illguts-0.44/svtypes-14.png"><img src="http://cpansearch.perl.org/src/RURBAN/illguts-0.44/svtypes-14.png"></a>
-(画像は [illguts](http://search.cpan.org/dist/illguts/) より)
+<a href="https://fastapi.metacpan.org/source/RURBAN/illguts-0.49/svtypes-14.png"><img src="https://fastapi.metacpan.org/source/RURBAN/illguts-0.49/svtypes-14.png"></a>
+
+(画像は [illguts](https://metacpan.org/release/RURBAN/illguts-0.49) より)
 
 #### AV
 
@@ -736,7 +737,7 @@ Perl の内部のことが解説されてます。
 ### [perlclib](http://perldoc.perl.org/perlclib.html)
 C標準ライブラリを使用する際の、注意点(主に代替すべき API)について記載されています。
 
-### [illguts](http://cpansearch.perl.org/src/RURBAN/illguts-0.44/index.html)
+### [illguts](http://cpansearch.perl.org/src/RURBAN/illguts-0.49/index.html)
 
 Perl の内部構造を画像まじりで解説してくれるページです。
 
